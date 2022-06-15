@@ -1,0 +1,200 @@
+function onCollisionEnter(collision_info)
+  -- collision_info table:
+  --   collision_object    Object
+  --   contact_points      Table     {Vector, ...}
+  --   relative_velocity   Vector
+  local link = collision_info.collision_object.getGMNotes()
+  title = collision_info.collision_object.getName()
+  card = collision_info.collision_object
+  showUI()
+  if link ~= nil and title ~= nil then
+    getData(link)
+  end
+end
+
+function onLoad(save_state)
+  hide = false
+end
+
+function hideOption()
+  if hide then
+    hide = false
+  else hide =true
+  end
+end
+
+function onCollisionExit(collision_info)
+  if hide then
+    hideUI()
+  end
+end
+
+function getData(link)
+
+    WebRequest.get(link, function(request)
+      raw_data = request.text
+      local desc = getHyper(raw_data)
+      desc = getEnter(desc)
+      desc = pretty(zone(desc))
+      --desc = pretty(zone(desc))
+      desc = string.sub(string.gsub(desc, '&lt;', "<"), 1)
+      desc = string.sub(string.gsub(desc, '&gt;', ">"), 1)
+      desc = string.sub(string.gsub(desc, '&amp;', "&"), 1)
+      desc = string.sub(string.gsub(desc, '&quot;', '"'), 1)
+
+      local tags = getTags(raw_data)
+      --local players = getNum(tags)
+      --local time = getTime(tags)
+      local backup = link
+      if card ~= nil then
+        card.setDescription(tags .. "\n\n" .. backup)
+      end
+      --setNotes(players)
+
+      --setNotes(desc)
+      updateViewer(desc, tags)
+    end)
+end
+
+function updateViewer(desc, tags)
+--contentText
+--local text = self.UI.getValue("contentText")
+  self.UI.setValue("titleText", title)
+  self.UI.setValue("contentText", desc)
+  self.UI.setValue("infoText", tags)
+end
+
+function zone(html)
+  local startpos = string.find(html, '<div class="workshopItemDescription" id="highlightContent">', 1, true)
+  local endpos = string.find(html, '<script>', startpos, true)
+  html = string.sub(html, startpos, endpos)
+  return html
+end
+
+function getHyper(html)
+  html = string.sub(string.gsub(html, '<a class="bb_link" href="', ""), 1)
+  html = string.sub(string.gsub(html, '" target="_blank" rel="noreferrer" >', ""), 1)
+  return html
+end
+
+function getEnter(html)
+  html = string.sub(string.gsub(html, '<br>', "\n"), 1)
+  return html
+end
+
+function pretty(desc)
+local result = ""
+local tagNames = string.split(desc, '<(%w+)>')
+ for _, tagName in ipairs(tagNames) do
+     tagName = string.gsub(tagName, "%b<>", "")
+     result = result .. tagName
+   end
+   result = string.sub(result, 1, -2)
+  return result
+end
+
+function translation(text)
+  text = string.sub(string.gsub(text, '%sType', "유형"), 1)
+  text = string.sub(string.gsub(text, 'Category', "종류"), 1)
+  text = string.sub(string.gsub(text, 'Game종류', "\n게임종류"), 1)
+  text = string.sub(string.gsub(text, 'BoardGames', "보드게임"), 1)
+  text = string.sub(string.gsub(text, 'Cards', "카드"), 1)
+  text = string.sub(string.gsub(text, 'Card', "카드"), 1)
+  text = string.sub(string.gsub(text, 'Party', "파티"), 1)
+  text = string.sub(string.gsub(text, 'Family', "가족"), 1)
+  text = string.sub(string.gsub(text, 'Memory', "기억력"), 1)
+  text = string.sub(string.gsub(text, 'Abstract', "추상"), 1)
+  text = string.sub(string.gsub(text, 'Mature', "성인"), 1)
+  text = string.sub(string.gsub(text, 'Cooperative', "협력"), 1)
+  text = string.sub(string.gsub(text, 'Original', "자작"), 1)
+  text = string.sub(string.gsub(text, 'Dice', "주사위"), 1)
+  text = string.sub(string.gsub(text, 'Strategy', "전략"), 1)
+  text = string.sub(string.gsub(text, 'Role-playing', "롤플레잉"), 1)
+  text = string.sub(string.gsub(text, 'Thematic', "테마"), 1)
+  text = string.sub(string.gsub(text, 'Puzzle', "퍼즐"), 1)
+  text = string.sub(string.gsub(text, 'Dexterity', "순발력"), 1)
+  text = string.sub(string.gsub(text, 'Miniature', "미니어쳐"), 1)
+  text = string.sub(string.gsub(text, 'Components', "컴포넌트"), 1)
+  text = string.sub(string.gsub(text, 'Figurines', "피규어"), 1)
+  text = string.sub(string.gsub(text, 'Props', "소품"), 1)
+  text = string.sub(string.gsub(text, 'Rooms', "방"), 1)
+  text = string.sub(string.gsub(text, 'Objects', "오브젝트"), 1)
+  text = string.sub(string.gsub(text, 'Original', "자작"), 1)
+  text = string.sub(string.gsub(text, 'Games', "게임"), 1)
+  text = string.sub(string.gsub(text, 'Game', "게임"), 1)
+  text = string.sub(string.gsub(text, '%sComplexity', "\n난이도"), 1)
+  text = string.sub(string.gsub(text, 'Complexity', "난이도"), 1)
+  text = string.sub(string.gsub(text, 'Low', "낮은"), 1)
+  text = string.sub(string.gsub(text, 'Medium', "중간"), 1)
+  text = string.sub(string.gsub(text, 'High', "어려운"), 1)
+  text = string.sub(string.gsub(text, 'NumberofPlayers', "\n인원수"), 1)
+  text = string.sub(string.gsub(text, 'PlayTime', "\n플레이 시간"), 1)
+  text = string.sub(string.gsub(text, 'minutes', "분"), 1)
+  text = string.sub(string.gsub(text, 'Assets', "\n에셋"), 1)
+  text = string.sub(string.gsub(text, 'UserInterfaces', "UI"), 1)
+  text = string.sub(string.gsub(text, 'Scripting', "스크립트"), 1)
+  text = string.sub(string.gsub(text, 'Automated', "자동화"), 1)
+  text = string.sub(string.gsub(text, 'Backgrounds', "\n배경"), 1)
+  text = string.sub(string.gsub(text, 'Tables', "테이블"), 1)
+  text = string.sub(string.gsub(text, 'Rules', "룰북"), 1)
+  text = string.sub(string.gsub(text, 'Language', "\n언어"), 1)
+  text = string.sub(string.gsub(text, 'Korean', "한국어"), 1)
+  text = string.sub(string.gsub(text, 'English', "영어"), 1)
+  return text
+end
+
+function getTags(html)
+  local result = "창작마당에 태그가 존재하지 않습니다."
+    local startpos = string.find(html, '<div class="rightDetailsBlock">', 1, true)
+    local endpos = string.find(html, '<div class="dotted_hr_uri hr padded"></div>', startpos, true)
+    if endpos == nil then
+      return result
+    end
+    html = string.sub(html, startpos, endpos-1)
+    html = string.gsub(html, "%s", '')
+    html = string.gsub(html, "%<.->%>-", ' ')
+    html = string.gsub(html, "&nbsp;", ' ')
+    -- html = string.gsub(html, "%g%:", '\n:')
+
+    -- setNotes(html)
+
+    if string.len(html) ~= 0 then
+    -- html = string.gsub(html, "(.-)%:&nbsp;", '\n%.-%:')
+    result = translation(html)
+     else result="창작마당에 태그가 존재하지 않습니다."
+     end
+    return result
+end
+
+function showUI()
+  self.UI.show("titlePanel")
+  self.UI.show("contentPanel")
+  self.UI.show("infoPanel")
+end
+
+function hideUI()
+  self.UI.hide("titlePanel")
+  self.UI.hide("contentPanel")
+  self.UI.hide("infoPanel")
+end
+
+function trim(str)
+return string.sub(string.gsub(str, '<', ""), 1)
+end
+
+function trim2(str, delete)
+return string.sub(string.gsub(str, delete, ""), 1)
+end
+
+function string:split(delimiter)
+local result = { }
+local from = 1
+local delim_from, delim_to = string.find( self, delimiter, from )
+while delim_from do
+  table.insert( result, string.sub( self, from , delim_from-1 ) )
+  from = delim_to + 1
+  delim_from, delim_to = string.find( self, delimiter, from )
+end
+table.insert( result, string.sub( self, from ) )
+return result
+end

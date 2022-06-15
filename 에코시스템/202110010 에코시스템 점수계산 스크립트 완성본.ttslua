@@ -1,0 +1,675 @@
+fieldNum = 0
+streamNum = 0
+dragonNum = 0
+
+visited = {["White"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Red"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Yellow"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Green"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Blue"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Purple"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+}
+
+dragonvisited = {["White"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Red"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Yellow"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Green"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Blue"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+["Purple"] = {[1]={false,false,false,false,false},[2]={false,false,false,false,false},[3]={false,false,false,false,false},[4]={false,false,false,false,false}},
+}
+
+fields = {["White"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Red"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Yellow"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Green"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Blue"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Purple"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+}
+
+streams = {["White"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Red"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Yellow"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Green"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Blue"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Purple"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+}
+
+dragons = {["White"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Red"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Yellow"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Green"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Blue"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Purple"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+}
+
+streamcounts = {["White"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Red"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Yellow"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Green"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Blue"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Purple"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+}
+fieldcounts = {["White"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Red"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Yellow"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Green"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Blue"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Purple"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+}
+dragoncounts = {["White"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Red"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Yellow"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Green"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Blue"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+["Purple"] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+}
+
+map = {["White"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Red"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Yellow"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Green"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Blue"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Purple"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+}
+
+function onload()
+zoneguid = {["White"] = {[1]={'70b869','4dedc3','42c602','424735','c7db49'},
+[2]={'7bf380', '2bccbc', '91758a', 'ef1fa8', 'a0d37a'},
+[3]={'ad6ff1', '9067e3', '8501ac', '08c32c', '0fdb36'},
+[4]={'6acbeb', '627402', '401ab8', '71f8cc', '82dbfa'},
+["big"] = {'2a9d02'},
+},
+["Red"] = {[1]={'2c34e8','7bfb38','c3b38f','286241','0e3ed6'},
+[2]={'6f8981','bd0584','482214','f04629','ef43f4'},
+[3]={'8ba3e3','b05b51','945add','41537a','9e7e92'},
+[4]={'9904fd','85aec2','a92ed5','256f3c','713dfc'},
+["big"] = {'ca9b63'},
+},
+["Yellow"] = {[1]={'11d05a','245516','782c49','c8305c','4d09b2'},
+[2]={'24ffdc','bfd1e2','b269da','f9679a','44e45e'},
+[3]={'724a43','c2b59a','48c419','8eb98f','b57152'},
+[4]={'5f3efa','d62066','672e1d','d84632','3ea3b1'},
+["big"] = {'2e0216'},
+},
+["Green"] = {[1]={'c53c97','44122b','39a4a2','c507ec','165b58'},
+[2]={'9606f6','c121fe','5fcdb6','dd41dc','bd0164'},
+[3]={'473748','05cc45','5580dc','1e887f','0a54ac'},
+[4]={'839f22','366584','75dc8c','2baf79','8ae7d5'},
+["big"] = {'bd34f9'},
+},
+["Blue"] = {[1]={'51a334','f40fc7','d6c0f8','033ef5','7ebe08'},
+[2]={'d6d2ae','b85afd','ff0e00','6217ab','7f15e8'},
+[3]={'383e15','65982c','1c787f','219ec3','f6fffc'},
+[4]={'225e57','e50a96','0dd862','24c256','43c050'},
+["big"] = {'848174'},
+},
+["Purple"] = {[1]={'25b88f','5ca8a1','de6606','6062d8','ccfb0f'},
+[2]={'5f094c','e0defc','0e2412','e59adc','9bb602'},
+[3]={'0d4e87','e3e265','7aae3d','325375','284a7e'},
+[4]={'66216b','bb27f3','f55b7e','6bc949','f25798'},
+["big"] = {'168859'},
+},
+}
+
+val = {["White"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Red"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Yellow"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Green"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Blue"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+["Purple"] = {[1]={0,0,0,0,0},[2]={0,0,0,0,0},[3]={0,0,0,0,0},[4]={0,0,0,0,0},},
+}
+
+wolfcount = {  ["White"] = 0,  ["Red"] = 0,  ["Yellow"] = 0,  ["Green"] = 0,  ["Blue"] = 0,  ["Purple"] = 0,}
+
+gapcount = {  ["White"] = 0,  ["Red"] = 0,  ["Yellow"] = 0,  ["Green"] = 0,  ["Blue"] = 0,  ["Purple"] = 0,}
+
+maxfield = {  ["White"] = 0,  ["Red"] = 0,  ["Yellow"] = 0,  ["Green"] = 0,  ["Blue"] = 0,  ["Purple"] = 0,}
+
+maxstream = {  ["White"] = 0,  ["Red"] = 0,  ["Yellow"] = 0,  ["Green"] = 0,  ["Blue"] = 0,  ["Purple"] = 0,}
+
+    local button_parameters = {}
+    button_parameters.click_function = "finish"
+    button_parameters.function_owner = self
+    button_parameters.label = "점수\n계산"
+    button_parameters.position = {0, 0.5, 0}
+    --button_parameters.rotation = {float x, float y, float z} ???Optional
+    button_parameters.width = 400
+    button_parameters.height = 400
+    button_parameters.font_size = 100
+    self.createButton(button_parameters)
+end
+
+function sum(color)
+  local seated = getSeatedPlayers()
+  local sum = 0
+  local board = {
+    ["White"] = 69,
+    ["Red"] = 83,
+    ["Yellow"] = 55,
+    ["Green"] = 41,
+    ["Blue"] = 27,
+    ["Purple"] = 13,
+  }
+for i=1, 4 do
+  for j=1, 5 do
+  sum = sum + val[color][i][j]
+  end
+end
+sum = sum + deersum[color]
+--print(deersum)
+
+if ready == false then
+broadcastToAll("카드를 모두 배치한 뒤 점수 계산 버튼을 눌러주세요!")
+else
+broadcastToAll(Player[color].steam_name .. "님의 점수는 " .. sum .. "점입니다!")
+getObjectFromGUID('986736').editInput({index = board[color], value = sum})
+getObjectFromGUID('986736').editInput({index = board[color]-1, value = gapsum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-2, value = wolfsum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-3, value = streamsum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-4, value = deersum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-5, value = foxsum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-6, value = dragonflysum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-7, value = rabbitsum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-8, value = eaglesum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-9, value = troutsum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-10, value = fieldsum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-11, value = beesum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-12, value = bearsum[color]})
+getObjectFromGUID('986736').editInput({index = board[color]-13, value = Player[color].steam_name})
+end
+end
+
+function finish()
+    for i=1, 83 do
+  getObjectFromGUID('986736').editInput({index = i, value = ""})
+  end
+
+  deer = {
+    ["White"] = {nil,nil,nil,nil,nil,nil,nil,nil,nil},
+    ["Red"] = {nil,nil,nil,nil,nil,nil,nil,nil,nil},
+    ["Yellow"] = {nil,nil,nil,nil,nil,nil,nil,nil,nil},
+    ["Green"] = {nil,nil,nil,nil,nil,nil,nil,nil,nil},
+    ["Blue"] = {nil,nil,nil,nil,nil,nil,nil,nil,nil},
+    ["Purple"] = {nil,nil,nil,nil,nil,nil,nil,nil,nil},
+  }
+  --cards = {nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil}
+  ready = true
+
+  deersum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  bearsum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  beesum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  foxsum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  troutsum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  eaglesum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  rabbitsum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  fieldsum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  dragonflysum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  streamsum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  wolfsum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+  gapsum = {    ["White"] = 0,    ["Red"] = 0,    ["Yellow"] = 0,    ["Green"] = 0,    ["Blue"] = 0,    ["Purple"] = 0,  }
+
+  fieldNum = 0
+  streamNum = 0
+  dragonNum = 0
+
+  local seated = getSeatedPlayers()
+  for _,color in pairs(seated) do
+    for i=1, 4 do
+      for j=1, 5 do
+        if getObjectFromGUID(zoneguid[color][i][j]).getObjects()[3] == nil then
+          ready = false
+        else
+            local centercard = getObjectFromGUID(zoneguid[color][i][j]).getObjects()[3]
+              table.insert(map[color][i], j, centercard.getGMNotes())
+            if centercard ~= nil and centercard.getGMNotes() == "토끼" then
+              val[color][i][j] = 1
+              rabbitsum[color] = rabbitsum[color] + 1
+              --print("토끼 1점!")
+            elseif centercard ~= nil and centercard.getGMNotes() == "곰" then
+          		for l=1, 4 do
+          			if near(i,j,l, color) == "꿀벌" or near(i,j,l, color) == "송어" then
+          			val[color][i][j] = val[color][i][j] + 2
+                bearsum[color] = bearsum[color] + 2
+          			end
+          		end
+                --print("곰 " .. val[color][i][j] .. "점 추가!")
+            elseif centercard ~= nil and centercard.getGMNotes() == "독수리" then
+          		for l=1, 12 do
+          			if neareagle(i,j,l, color) == "토끼" or neareagle(i,j,l, color) == "송어" then
+          			val[color][i][j] = val[color][i][j] + 2
+                eaglesum[color] = eaglesum[color] + 2
+          			end
+          		end
+                --print("독수리 " .. val[color][i][j] .. "점 추가!")
+            elseif centercard ~= nil and centercard.getGMNotes() == "사슴" then
+            					deer[color][i] = i
+          					deer[color][j+4] = j+4
+            elseif centercard ~= nil and centercard.getGMNotes() == "여우" then
+          			val[color][i][j] = 3
+          		for l=1, 4 do
+          			if near(i,j,l, color) == "곰" or near(i,j,l, color) == "늑대" then
+          			val[color][i][j] = 0
+          			end
+          		end
+                --print("여우 " .. val[color][i][j] .. "점 추가!")
+            elseif centercard ~= nil and centercard.getGMNotes() == "꿀벌" then
+          		for l=1, 4 do
+          			if near(i,j,l, color) == "초원" then
+          			val[color][i][j] = val[color][i][j] + 3
+                beesum[color] = beesum[color] + 3
+          			end
+          		end
+              --print("꿀벌 " .. val[color][i][j] .. "점 추가!")
+            elseif centercard ~= nil and centercard.getGMNotes() == "송어" then
+          		for l=1, 4 do
+          			if near(i,j,l, color) == "개울" or near(i,j,l, color) == "잠자리" then
+          			val[color][i][j] = val[color][i][j] + 2
+                troutsum[color] = troutsum[color] + 2
+          			end
+          		end
+                --print("송어 " .. val[color][i][j] .. "점 추가!")
+            elseif centercard ~= nil and centercard.getGMNotes() == "늑대" then
+            wolfcount[color] = wolfcount[color] + 1
+            elseif centercard ~= nil and centercard.getGMNotes() == "개울" then
+              streamNum = streamNum + 1
+              for l=1, 4 do
+              dfsstream(i,j, l, color, "개울")
+            end
+            if streams[color][streamNum] < 5 then
+              --print(streams[color][streamNum])
+            else
+            --print(math.floor(streams[color][streamNum]/4).. "개울" .. i .. j)
+              table.insert(streamcounts[color], streamNum, math.floor(streams[color][streamNum]/4))
+              --print(streamNum .. "개울")
+              end
+            elseif centercard ~= nil and centercard.getGMNotes() == "초원" then
+              fieldNum = fieldNum + 1
+              for l=1, 4 do
+              dfsfield(i,j, l, color, "초원")
+            end
+            if math.floor(fields[color][fieldNum]/4) > 4 then
+              fieldsum[color] = fieldsum[color] + 15
+            elseif math.floor(fields[color][fieldNum]/4) > 3 then
+              fieldsum[color] = fieldsum[color] + 10
+            elseif math.floor(fields[color][fieldNum]/4) > 2 then
+              fieldsum[color] = fieldsum[color] + 6
+            elseif math.floor(fields[color][fieldNum]/4) > 1 then
+              fieldsum[color] = fieldsum[color] + 3
+            end
+            --print(math.floor(fields[color][fieldNum]/4) .. "초원" .. i .. j)
+              table.insert(fieldcounts[color], fieldNum, math.floor(fields[color][fieldNum]/4))
+            elseif centercard ~= nil and centercard.getGMNotes() == "잠자리" then
+                dragonNum = dragonNum + 1
+            for l=1, 4 do
+            dfsdragon(i,j, l, color, "개울")
+          end
+          if dragons[color][dragonNum] < 5 then
+          else
+          --print(math.floor(dragons[color][dragonNum]/4-1).. "잠자리" .. i .. j)
+            table.insert(dragoncounts[color], dragonNum, math.floor(dragons[color][dragonNum]/4-1))
+              dragonflysum[color] = dragonflysum[color] + math.floor(dragons[color][dragonNum]/4-1)
+              val[color][i][j] = val[color][i][j] + math.floor(dragons[color][dragonNum]/4-1)
+            end
+            end
+
+            if centercard.getGMNotes() == "여우" and val[color][i][j] ~= 0 then
+              foxsum[color] = foxsum[color] + 3
+            end
+          end
+        end
+end
+for i=1,9 do
+  if deer[color][i] ~= nil then
+  deersum[color] = deersum[color] + 2
+end
+end
+
+
+end
+
+ wolfsumcount()
+ streamsumcount()
+  for _,color in pairs(seated) do
+    counts(color)
+    sum(color)
+    reset(color)
+  end
+end
+
+function counts(color)
+            if wolfsum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if streamsum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if deersum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if foxsum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if dragonflysum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if rabbitsum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if eaglesum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if troutsum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if fieldsum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if beesum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+            if bearsum[color] == 0 then
+            gapcount[color] = gapcount[color] + 1
+            end
+
+            if gapcount[color] > 5 then
+            gapsum[color] = -5
+            elseif gapcount[color] == 5 then
+            gapsum[color] = 0
+            elseif gapcount[color] == 4 then
+            gapsum[color] = 3
+            elseif gapcount[color] == 3 then
+            gapsum[color] = 7
+            else
+            gapsum[color] = 12
+            end
+
+--print(math.max(maxstream["White"], maxstream["Red"], maxstream["Yellow"], maxstream["Green"], maxstream["Blue"], maxstream["Purple"]))
+--print(maxstream[color] .. "최대")
+
+--maxfield[color] = math.max(fieldcounts[color])
+end
+
+function streamsumcount()
+  --streamsumcount()
+  local seated = Player.getAvailableColors()
+  streamcount2 = {0, 0, 0, 0, 0, 0}
+  streamcount3 = {0, 0, 0, 0, 0, 0}
+
+  for i, color in pairs(seated) do
+    local seated = Player.getAvailableColors()
+          for k=1,20 do
+          maxstream[color] = math.max(streamcounts[color][k], maxstream[color])
+          streamcount2[i] = math.max(streamcount2[i], streamcounts[color][k])
+          streamcount3[i] = math.max(streamcount3[i], streamcounts[color][k])
+      end
+     for k=1,6 do
+       for j=1, 5 do
+         if streamcount2[j]<streamcount2[j+1] then
+           local temp = streamcount2[j]
+           streamcount2[j] = streamcount2[j+1]
+           streamcount2[j+1] = temp
+         end
+     end
+   end
+
+  end
+
+  for i, color in pairs(seated) do
+      local bigzone = getObjectFromGUID(zoneguid[color]["big"][1])
+      local zoneObjects = bigzone.getObjects()
+      local streamtie = 0
+  --print(streamcount2[1] .. streamcount2[2] .. streamcount2[3] .. streamcount2[4] .. streamcount2[5] .. streamcount2[6] .. "정렬")
+  --print(streamcount3[1] .. streamcount3[2] .. streamcount3[3] .. streamcount3[4] .. streamcount3[5] .. streamcount3[6])
+  if streamcount2[1] == 0 then
+            for _, item in ipairs (zoneObjects) do
+                    if item.getGMNotes() == "개울" then
+                    streamsum[color] = 8                      
+                    end
+            end
+  elseif streamcount3[i] ~= 0 and  maxstream[color] == streamcount2[1] then
+      streamtie = streamtie + 1
+      streamsum[color] = 8
+      --print(color .. " 1등 " .. streamcount3[i])
+  elseif streamcount3[i] ~= 0 and maxstream[color] == streamcount2[2] and streamtie < 2 then
+    streamsum[color] = 5
+    --print(color .. " 2등 " .. streamcount3[i])
+    end
+  end
+end
+
+function wolfsumcount()
+  local seated = Player.getAvailableColors()
+  wolfcount2 = {0, 0, 0, 0, 0, 0}
+  wolfcount3 = {0, 0, 0, 0, 0, 0}
+  for i, color in pairs(seated) do
+  local bigzone = getObjectFromGUID(zoneguid[color]["big"][1])
+    local zoneObjects = bigzone.getObjects()
+              for _, item in ipairs (zoneObjects) do
+                      if item.getGMNotes() == "늑대" then
+                          wolfcount2[i] = wolfcount2[i] + 1
+                          wolfcount3[i] = wolfcount3[i] + 1
+                      end
+              end
+   for k=1,6 do
+     for j=1, 5 do
+       if wolfcount2[j]<wolfcount2[j+1] then
+         local temp = wolfcount2[j]
+         wolfcount2[j] = wolfcount2[j+1]
+         wolfcount2[j+1] = temp
+       end
+   end
+ end
+end
+
+for i, color in pairs(seated) do
+local tie = 0
+local tie2 = 0
+--print(wolfcount2[1] .. wolfcount2[2] .. wolfcount2[3] .. wolfcount2[4] .. wolfcount2[5] .. wolfcount2[6])
+--print(wolfcount3[1] .. wolfcount3[2] .. wolfcount3[3] .. wolfcount3[4] .. wolfcount3[5] .. wolfcount3[6])
+ if wolfcount3[i] ~= 0 and  wolfcount3[i] == wolfcount2[1] then
+    tie = tie+1
+    wolfsum[color] = 12
+    --print(color .. " 1등 " .. wolfcount3[i])
+elseif wolfcount3[i] ~= 0 and wolfcount3[i] == wolfcount2[2] and tie < 2 then
+  tie2 = tie2+1
+  wolfsum[color] = 8
+  --print(color .. " 2등 " .. wolfcount3[i])
+elseif wolfcount3[i] ~= 0 and wolfcount3[i] == wolfcount2[3] and tie2 < 2 then
+wolfsum[color] = 4
+--print(color .. " 3등 " .. wolfcount3[i])
+  end
+end
+end
+
+function reset(color)
+    for i=1, 4 do
+      for j=1, 5 do
+  val[color][i][j] = 0
+  visited[color][i][j] = false
+  dragonvisited[color][i][j] = false
+  map[color][i][j] = 0
+  wolfcount[color] = 0
+  wolfsum[color] = 0
+  wolfcountsum = 0
+  gapcount[color] = 0
+  maxstream[color] = 0
+  maxfield[color] = 0
+  gapsum[color] = 0
+  end
+  end
+
+  for k=1, 20 do
+  fields[color][k] = 0
+  streams[color][k] = 0
+  dragons[color][k] = 0
+  fieldcounts[color][k] = 0
+  streamcounts[color][k] = 0
+  dragoncounts[color][k] = 0
+  --apartNum = 0
+  --streamNum = 0
+  end
+end
+
+function near(r,c,dir,color)
+      --print(zones["White"][1][5])
+      local centercard = getObjectFromGUID(zoneguid[color][r][c]).getObjects()[3]
+      local aroundcard = nil
+      DIR = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+      DIR2 = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, 1}, {1, 1}, {-1, -1}, {1, -1}, {-2, 0}, {2, 0}, {0, -2}, {0, 2}, {-2, 2}, {2, 2}, {-2, -2}, {2, -2}, {-1, 2}, {1, 2}, {-1, -2}, {1, -2}, {-2, 1}, {2, 1}, {-2, -1}, {2, -1}}
+      local nr = r + DIR[dir][1]
+      local nc = c + DIR[dir][2]
+    if nr > 4 or nr < 1 then
+          nr = nil
+        goto continue
+    end
+    if nc > 5 or nc < 1 then
+          nc = nil
+        goto continue
+    end
+        ::continue::
+        --zoneguid["White"][nr][nc]) 주위 존 guid
+    if nr ~= nil and nc ~= nil and centercard ~= nil then
+        aroundcard = getObjectFromGUID(zoneguid[color][nr][nc]).getObjects()[3]
+      if aroundcard ~= nil then
+        --print(aroundcard.getGMNotes())
+        --print("행".. nr .. "열" .. nc )
+        return aroundcard.getGMNotes()
+      end
+    end
+end
+
+function neareagle(r,c,dir,color)
+    --print(zones["White"][1][5])
+    local centercard = getObjectFromGUID(zoneguid[color][r][c]).getObjects()[3]
+    local aroundcard = nil
+    --cards = {nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil}
+    DIR = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, 1}, {1, 1}, {-1, -1}, {1, -1}, {-2, 0}, {2, 0}, {0, -2}, {0, 2}}
+    --DIR = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, 1}, {1, 1}, {-1, -1}, {1, -1}, {-2, 0}, {2, 0}, {0, -2}, {0, 2}, {-2, 2}, {2, 2}, {-2, -2}, {2, -2}, {-1, 2}, {1, 2}, {-1, -2}, {1, -2}, {-2, 1}, {2, 1}, {-2, -1}, {2, -1}}
+
+      local nr = r + DIR[dir][1]
+      local nc = c + DIR[dir][2]
+    if nr > 4 or nr < 1 then
+        nr = nil
+      goto continue
+    end
+    if nc > 5 or nc < 1 then
+        nc = nil
+      goto continue
+    end
+      ::continue::
+      --zoneguid["White"][nr][nc]) 주위 �� guid
+  if nr ~= nil and nc ~= nil and centercard ~= nil then
+      aroundcard = getObjectFromGUID(zoneguid[color][nr][nc]).getObjects()[3]
+    if aroundcard ~= nil then
+      --print(aroundcard.getGMNotes())
+      --print("행".. nr .. "열" .. nc )
+      return aroundcard.getGMNotes()
+    end
+  end
+end
+
+function dfsdragon(r,c,dir,color,name)
+  --print(zones["White"][1][5])
+  local centercard = getObjectFromGUID(zoneguid[color][r][c]).getObjects()[3]
+  local aroundcard = nil
+
+  if centercard.getGMNotes() == "잠자리" and dragonvisited[color][r][c] == false then
+    for i=1, 4 do
+      for j =1, 5 do
+        dragonvisited[color][i][j] = false
+      end
+    end
+  end
+
+  dragonvisited[color][r][c] = true
+
+  dragons[color][dragonNum] = dragons[color][dragonNum] + 1
+  DIR = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+    local nr = r + DIR[dir][1]
+    local nc = c + DIR[dir][2]
+  if nr > 4 or nr < 1 then
+      nr = nil
+    goto continue
+  end
+  if nc > 5 or nc < 1 then
+      nc = nil
+    goto continue
+  end
+    ::continue::
+    --zoneguid["White"][nr][nc]) 주위 존 guid
+  if nr ~= nil and nc ~= nil and centercard ~= nil then
+    aroundcard = getObjectFromGUID(zoneguid[color][nr][nc]).getObjects()[3]
+    if aroundcard ~= nil and aroundcard.getGMNotes() == name and dragonvisited[color][nr][nc] == false then
+        for l=1, 4 do
+          dfsdragon(nr,nc,l,color,name)
+          --print(streams[color][streamNum] .. "개울" .. r .. c)
+          --math.floor((streams[color][streamNum] -2) / 4)
+        end
+    end
+  end
+end
+
+function dfsstream(r,c,dir,color,name)
+  --print(zones["White"][1][5])
+  local centercard = getObjectFromGUID(zoneguid[color][r][c]).getObjects()[3]
+  local aroundcard = nil
+
+  visited[color][r][c] = true
+  streams[color][streamNum] = streams[color][streamNum] + 1
+  DIR = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+  local nr = r + DIR[dir][1]
+  local nc = c + DIR[dir][2]
+    if nr > 4 or nr < 1 then
+        nr = nil
+      goto continue
+    end
+    if nc > 5 or nc < 1 then
+        nc = nil
+      goto continue
+    end
+    ::continue::
+    --zoneguid["White"][nr][nc]) 주위 존 guid
+  if nr ~= nil and nc ~= nil and centercard ~= nil then
+    aroundcard = getObjectFromGUID(zoneguid[color][nr][nc]).getObjects()[3]
+    if aroundcard ~= nil and aroundcard.getGMNotes() == name and visited[color][nr][nc] == false then
+        for l=1, 4 do
+          dfsstream(nr,nc,l,color,name)
+          --print(streams[color][streamNum] .. "개울" .. r .. c)
+          --math.floor((streams[color][streamNum] -2) / 4)
+        end
+    end
+  end
+end
+
+function dfsfield(r,c,dir,color,name)
+    --print(zones["White"][1][5])
+  local centercard = getObjectFromGUID(zoneguid[color][r][c]).getObjects()[3]
+  local aroundcard = nil
+
+  visited[color][r][c] = true
+  fields[color][fieldNum] = fields[color][fieldNum] + 1
+  DIR = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+  local nr = r + DIR[dir][1]
+  local nc = c + DIR[dir][2]
+
+    if nr > 4 or nr < 1 then
+            nr = nil
+          goto continue
+    end
+    if nc > 5 or nc < 1 then
+        nc = nil
+      goto continue
+    end
+      ::continue::
+      --zoneguid["White"][nr][nc]) 주위 존 guid
+    if nr ~= nil and nc ~= nil and centercard ~= nil then
+      aroundcard = getObjectFromGUID(zoneguid[color][nr][nc]).getObjects()[3]
+    if aroundcard ~= nil and aroundcard.getGMNotes() == name and visited[color][nr][nc] == false then
+        for l=1, 4 do
+            dfsfield(nr,nc,l,color,name)
+            --print(fields[color][fieldNum] .. "초원" .. r .. c)
+            --math.floor((streams[color][streamNum] -2) / 4)
+        end
+    end
+  end
+end

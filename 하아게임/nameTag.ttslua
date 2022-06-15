@@ -1,0 +1,75 @@
+function refreshName()
+  local zone = self.getZones()[2]
+  local objs = zone.getObjects()
+
+  for i = 1, #objs do
+    if objs[i].tag == "Card" and objs[i].getName() ~= "무시" then
+      obj = objs[i]
+    end
+  end
+
+  if obj ~= nil then
+  local color = obj.getGMNotes()
+  local color2 = stringColorToRGB(color)
+    if color2 ~= nil then
+      self.setColorTint(color)
+      self.editButton({
+        click_function = "null",
+        function_owner = self,
+        label          = getPlayerName(color),
+        position       = {0,0.1,0},
+        width          = 10000,
+        height         = 1000,
+        font_size      = 5000000000,
+        color          = color,
+        font_color     = "White",
+      })
+    else
+      reset()
+      obj = nil
+    end
+  elseif obj == nil then
+    reset()
+  end
+  obj = objs[1]
+end
+
+function reset()
+    self.editButton({
+      click_function = "null",
+      function_owner = self,
+      label          = "",
+      position       = {0,0.3,-2},
+      width          = 0,
+      height         = 0,
+      font_size      = 500,
+    })
+    self.setColorTint("Black")
+end
+
+function onLoad(save_state)
+self.setColorTint("Black")
+self.createButton({
+  click_function = "null",
+  function_owner = self,
+  label          = "",
+  position       = {0,0.3,-2},
+  width          = 0,
+  height         = 0,
+  font_size      = 500,
+})
+end
+
+
+function null()
+end
+
+function getPlayerName(color)
+  if color == "" then
+    return "ERROR"
+  elseif Player[color].seated then
+    return Player[color].steam_name
+  else
+    return color
+  end
+end

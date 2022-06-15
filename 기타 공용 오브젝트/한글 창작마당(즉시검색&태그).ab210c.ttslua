@@ -1,0 +1,541 @@
+names = {}
+images = {}
+links = {}
+checked = {}
+keyword = nil
+
+name_len = 0
+image_len = 0
+cnt = 0
+playerNum = "인원수"
+searchType = "즉시검색"
+playTime = "선택 안 함"
+complexity = "선택 안 함"
+
+head = 'https://steamcommunity.com/sharedfiles/filedetails/?id='
+
+function help(player, click, value)
+  if self.UI.getCustomAssets()[1] == nil then
+    self.UI.setCustomAssets({
+    {
+      name="dice",
+      url="http://cloud-3.steamusercontent.com/ugc/1854925792342110286/7DBAC3171D07DCEA66DAA0CEF7185A0962AB46B2/"
+    },
+    {
+      name="3JA2",
+      url="https://avatars.akamai.steamstatic.com/e71c472be66dc59a34373c90496b3f54cfc914c3_full.jpg"
+    },
+    })
+  end
+  if click == "-1" then
+    spawnDeck()
+    print("체크된 항목을 바탕으로 카드들을 불러왔습니다.")
+  elseif click == "-2" then
+    if cnt % 2 == 0 then
+      HideUi()
+    else
+      showUi()
+    end
+    cnt = cnt + 1
+  end
+end
+
+function getList(player, click, value)
+  if (searchType == "즉시검색" and keyword ~= nil) or searchType ~= "즉시검색" then
+  print("갱신 시작")
+  renew()
+else
+  broadcastToAll("검색어를 먼저 입력하거나 한글 탐지 방식을 변경해 주세요!", player.color)
+  end
+end
+
+function spawnDeck(player, value, id)
+  for i = 1, #names do
+    if self.UI.getAttribute("Check " .. i, "isOn") == "true" then
+      spawnCard(player, i, id)
+    end
+  end
+end
+
+function checkAll()
+local flag = self.UI.getAttribute("checkAll", "isOn")
+local whole = #names
+    for i = 1, whole do
+      if self.UI.getAttribute("Check " .. i, "isOn") == "true" then
+        self.UI.setAttribute("Check " .. i, "isOn", "false")
+      elseif self.UI.getAttribute("Check " .. i, "isOn") == "false" then
+        self.UI.setAttribute("Check " .. i, "isOn", "true")
+      end
+    end
+end
+
+function search(player, getkeyword, searchBarId)
+  keyword = getkeyword
+
+  if searchType ~= "즉시검색" then
+  local uiXML = self.UI.getXmlTable()
+  local tableLayout = uiXML[4].children[1].children[5].children[1]
+    for i = 1, #tableLayout.children do
+      local id = "Row " .. i
+      local textId = "Text " .. i
+        local title = tableLayout.children[i]
+            wholeTitle = self.UI.getValue(textId)
+          if keyword ~= "" and wholeTitle ~= nil and string.match(wholeTitle, tostring(keyword)) ~= nil then
+          --print(self.UI.getValue(tostring(id)))
+            self.UI.show(id)
+          else
+            self.UI.hide(id)
+          end
+            if keyword == "" then
+              self.UI.show(id)
+            end
+    end
+
+    end
+end
+
+function checkCard(player, value, id)
+  local flagNow = self.UI.getAttribute("Check " .. value, "isOn")
+  if flagNow == "false" then
+    self.UI.setAttribute("Check " .. value, "isOn", "true")
+  elseif flagNow == "true" then
+    self.UI.setAttribute("Check " .. value, "isOn", "false")
+  end
+end
+
+function spawnCard(player, value, id)
+  rowNum = tonumber(value)
+  newCard = spawnObject({
+  type = "Card",
+  position = self.positionToWorld({0,3,3}),
+  rotation = self.getRotation() + vector(0, 180, 0),
+  })
+
+newCard.setCustomObject({
+  face = images[rowNum],
+  back = "http://cloud-3.steamusercontent.com/ugc/1854925792342110286/7DBAC3171D07DCEA66DAA0CEF7185A0962AB46B2/",
+})
+newCard.setName(names[rowNum])
+newCard.setDescription(links[rowNum])
+newCard.setGMNotes(links[rowNum])
+local link = links[rowNum]
+
+    WebRequest.get(link, function(request)
+      raw_data = request.text
+      local desc = getHyper(raw_data)
+      desc = getEnter(desc)
+      desc = pretty(zoneInfo(desc))
+      --desc = pretty(zone(desc))
+      desc = string.sub(string.gsub(desc, '&lt;', "<"), 1)
+      desc = string.sub(string.gsub(desc, '&gt;', ">"), 1)
+      desc = string.sub(string.gsub(desc, '&amp;', "&"), 1)
+
+      local tags = getTags(raw_data)
+      --local players = getNum(tags)
+      --local time = getTime(tags)
+      local backup = link
+      if newCard ~= nil then
+        newCard.setDescription(tags .. "\n\n" .. backup)
+      end
+      --setNotes(players)
+
+      --setNotes(desc)
+    end)
+
+--print(rowNum)
+--print(images[rowNum])
+--print(names[rowNum])
+end
+
+function imageCut(html)
+  local startword = '<img class="workshopItemPreviewImage " src="'
+  local endword = '">'
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local image = string.sub(html, startpos, endpos)
+  image = trim(string.sub(image, string.len(startword)))
+  return image
+end
+
+function nameCut(html)
+  local startword = '<div class="workshopItemTitle ellipsis">'
+  local endword = '</div>'
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local name = string.sub(html, startpos, endpos)
+  name = trim(string.sub(name, string.len(startword)))
+  name = trim2(name)
+  name = string.sub(string.gsub(name, 'amp;', ""), 1)
+  name = string.sub(string.gsub(name, '&quot;', '"'), 1)
+  return name
+end
+
+function linkCut(html)
+  local startword = 'data-publishedfileid='
+  local endword = '">'
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local link = string.sub(html, startpos, endpos)
+  link = trim(string.sub(link, string.len(startword)))
+  link = trim2(link)
+  link = head .. link
+  return link
+end
+
+function zone(html)
+if string.find(html, '<div class="workshopBrowseItems">', 1, true) ~= nil then
+  local startpos = string.find(html, '<div class="workshopBrowseItems">', 1, true)
+  local endpos = string.find(html, 'div class="workshopBrowsePaging">', startpos, true)
+  html = string.sub(html, startpos, endpos)
+  return html
+else return "검색 결과가 없습니다!"
+  end
+end
+
+function getPageNum(html)
+  local pageStart = string.find(html, '<span class="pagebtn disabled">&lt;</span>', 10000, true)
+  local pageEnd = string.find(html, '>&gt;</a>', pageStart, true)
+  html = string.sub(html, pageStart, pageEnd)
+  local startpos = string.find(html, "&nbsp;<a class='pagebtn'", 1, true)
+  if startpos == nil then
+    return 1
+  elseif startpos > 10 then
+    startpos = startpos-10
+  end
+  local endpos = string.find(html, '</a', startpos, true)
+  num = string.sub(html, startpos, endpos)
+  num = string.sub(num, string.find(num, '">', 1, true) + 2 , -2)
+  return tonumber(num)
+end
+
+function SearchOptionSelected(player, option, id)
+  searchType = option
+  print(searchType)
+  if searchType == "즉시검색" then
+    self.UI.setValue("hitBtn", "검색")
+      self.UI.setAttribute("createDeckButton", "color", "#3366ff")
+  else
+    self.UI.setValue("hitBtn", "목록 갱신")
+      self.UI.setAttribute("createDeckButton", "color", "#31b32b")
+  end
+
+end
+
+function PlayerNumSelected(player, option, id)
+   playerNum = option
+   if playerNum ~= "인원수" then
+     print(playerNum .. "인 태그를 가진 게임을 검색합니다.")
+   else print("인원수에 상관없이 게임을 검색합니다.")
+   end
+end
+
+function TimeSelected(player, option, id)
+  playTime = option
+  if playTime ~= "선택 안 함" then
+    print(playTime .. " 태그를 가진 게임을 검색합니다.")
+  else print("플레이 시간에 상관없이 게임을 검색합니다.")
+  end
+end
+
+function ComplexitySelected(player, option, id)
+  complexity = option
+  if complexity ~= "선택 안 함" then
+    print(complexity .. " 태그를 가진 게임을 검색합니다.")
+  else print("난이도에 상관없이 게임을 검색합니다.")
+  end
+end
+
+
+function renew()
+  playerTag = ""
+    if searchType == "즉시검색" and keyword ~= nil then --"한글"
+      print(keyword .. " 키워드로 검색")
+      fullUrl = "https://steamcommunity.com/workshop/browse/?appid=286160&childpublishedfileid=0&browsesort=mostrecent&section=readytouseitems&searchtext=" .. keyword
+    elseif searchType == "한글" then --"한글"
+      fullUrl = "https://steamcommunity.com/workshop/browse/?appid=286160&searchtext=%ED%95%9C%EA%B8%80&childpublishedfileid=0&browsesort=mostrecent&section=readytouseitems"
+    elseif searchType == "language:Korean" then --language:korean
+      fullUrl = "https://steamcommunity.com/workshop/browse/?appid=286160&browsesort=mostrecent&section=readytouseitems&requiredtags%5B0%5D=Korean&actualsort=mostrecent"
+    end
+
+    if playTime ~= "선택 안 함" then
+    playTime = string.sub(string.gsub(playTime, ' ', "+"), 1)
+    playTime = string.sub(string.gsub(playTime, '분', "minutes"), 1)
+    end
+
+      if playTime == "180++minutes" then
+        playTime= '180%2B+minutes'
+      end
+      if playTime ~= "선택 안 함" then
+        fullUrl = fullUrl .. "&requiredtags%5B%5D=" .. playTime
+      end
+
+      if complexity == "낮음" then
+        complexity = 'Low+Complexity'
+      elseif complexity == "보통" then
+        complexity = 'Medium+Complexity'
+      elseif complexity == "높음" then
+        complexity = 'High+Complexity'
+      end
+      if complexity ~= "선택 안 함" then
+        fullUrl = fullUrl .. "&requiredtags%5B%5D=" .. complexity
+      end
+
+  if playerNum == "10+" then
+    playerNum = '10%2B'
+  end
+  if playerNum ~= "인원수" then
+    fullUrl = fullUrl .. "&requiredtags%5B%5D=" .. playerNum .. "&p="
+  else
+    fullUrl = fullUrl .. "&p="
+  end
+
+  keyword = nil
+    WebRequest.get(fullUrl .. 1, function(numrequest)
+        num_data1 = numrequest.text
+  lastpagenum = getPageNum(num_data1)
+  menuY = (lastpagenum * 75 ) * -1
+  menuHeight = lastpagenum * 300
+  names = {}
+  images = {}
+  links = {}
+  --print(lastpagenum)
+for pagenum = 1, lastpagenum do
+  local url = fullUrl .. pagenum
+
+  WebRequest.get(url, function(request)
+    raw_data1 = request.text
+    raw_data = zone(raw_data1)
+    --setNotes(raw_data)
+
+
+    if raw_data ~= "검색 결과가 없습니다!" then
+    local workshops = string.split(raw_data, '<div style="clear: both"></div>')
+    for i, workshop in ipairs(workshops) do
+      local img = imageCut(workshop)
+      local name = nameCut(workshop)
+      local link = linkCut(workshop)
+      if name ~= "" then
+        table.insert(names, #names+1, name)
+        table.insert(images, #images+1, img)
+        table.insert(links, #links+1, link)
+      end
+    end
+    end
+    --print(pagenum .. "페이지 갱신")
+  end) -- 페이지 1개 가져오기 종료
+end -- 페이지 반복문 종료
+   -- returns and passes to callback:
+    -- download_progress    bool      (0.0 - 1.0)
+    -- error                string
+    -- is_error             bool
+    -- is_done              bool
+    -- text                 string
+    -- upload_progress      bool      (0.0 - 1.0)
+    -- url                  string
+
+
+
+        Wait.frames(function()
+          updateXML()
+          self.UI.setValue("hitBtn", "검색")
+          self.UI.setAttribute("createDeckButton", "color", "#3366ff")
+        end, 150)
+      end)
+      playerNum = "인원수"
+      searchType = "즉시검색"
+      playTime = "선택 안 함"
+      complexity = "선택 안 함"
+      checked = {}
+end
+
+function updateXML()
+    local uiXML = self.UI.getXmlTable()
+    --local tableLayout = uiXML[4].children[1].children[5].children[1].children
+    uiXML[4].children[1].children[5].children[1].children = {}
+    for i = 1, #names do
+      local name = names[i]
+      local image = images[i]
+        --print(name)
+
+          table.insert(uiXML[4].children[1].children[5].children[1].children, 1, {
+              tag = "Row",
+              attributes = { class="generalRow", id = "Row " .. i, name = name, image = image,
+            },
+                children={
+                {
+                tag = "Cell", -- 이미지 셀
+                children = {
+                  {
+                    tag = "Image",
+                    attributes = {class = "cardImage", image = "dice"}
+                  }
+                }
+              }, -- 이미지 셀 종료
+                  {
+                    tag = "Cell",
+                    attributes = { class="titlesCell", },
+                      children={
+                        {
+                          tag = "Text",
+                            attributes = { text = name, class = "generalText", id = "Text " .. i, onClick="spawnCard(" .. i .. ")", },
+                            value = name,
+                        }
+                    },
+                  },
+                  {
+                      tag = "Cell", -- 체크셀
+                      children = {
+                        tag = "Toggle",
+                        attributes = { class="checkbox", id = "Check " .. i, onClick="checkCard(" .. i .. ")", isOn="false", },
+                      },
+                  },
+              },
+          }) -- 전체 행
+      end
+    self.UI.setXmlTable(uiXML)
+    print("총 " .. #names .. "장 갱신완료")
+end
+
+
+
+
+
+function zoneInfo(html)
+  local startpos = string.find(html, '<div class="workshopItemDescription" id="highlightContent">', 1, true)
+  local endpos = string.find(html, '<script>', startpos, true)
+  html = string.sub(html, startpos, endpos)
+  return html
+end
+
+function getHyper(html)
+  html = string.sub(string.gsub(html, '<a class="bb_link" href="', ""), 1)
+  html = string.sub(string.gsub(html, '" target="_blank" rel="noreferrer" >', ""), 1)
+  return html
+end
+
+function getEnter(html)
+  html = string.sub(string.gsub(html, '<br>', "\n"), 1)
+  return html
+end
+
+function pretty(desc)
+local result = ""
+local tagNames = string.split(desc, '<(%w+)>')
+ for _, tagName in ipairs(tagNames) do
+     tagName = string.gsub(tagName, "%b<>", "")
+     result = result .. tagName
+   end
+   result = string.sub(result, 1, -2)
+  return result
+end
+
+function translation(text)
+  text = string.sub(string.gsub(text, '%sType', "유형"), 1)
+  text = string.sub(string.gsub(text, 'Category', "종류"), 1)
+  text = string.sub(string.gsub(text, 'Game종류', "\n게임종류"), 1)
+  text = string.sub(string.gsub(text, 'BoardGames', "보드게임"), 1)
+  text = string.sub(string.gsub(text, 'Cards', "카드"), 1)
+  text = string.sub(string.gsub(text, 'Card', "카드"), 1)
+  text = string.sub(string.gsub(text, 'Party', "파티"), 1)
+  text = string.sub(string.gsub(text, 'Family', "가족"), 1)
+  text = string.sub(string.gsub(text, 'Memory', "기억력"), 1)
+  text = string.sub(string.gsub(text, 'Abstract', "추상"), 1)
+  text = string.sub(string.gsub(text, 'Mature', "성인"), 1)
+  text = string.sub(string.gsub(text, 'Cooperative', "협력"), 1)
+  text = string.sub(string.gsub(text, 'Original', "자작"), 1)
+  text = string.sub(string.gsub(text, 'Dice', "주사위"), 1)
+  text = string.sub(string.gsub(text, 'Strategy', "전략"), 1)
+  text = string.sub(string.gsub(text, 'Role-playing', "롤플레잉"), 1)
+  text = string.sub(string.gsub(text, 'Thematic', "테마"), 1)
+  text = string.sub(string.gsub(text, 'Puzzle', "퍼즐"), 1)
+  text = string.sub(string.gsub(text, 'Dexterity', "순발력"), 1)
+  text = string.sub(string.gsub(text, 'Miniature', "미니어쳐"), 1)
+  text = string.sub(string.gsub(text, 'Components', "컴포넌트"), 1)
+  text = string.sub(string.gsub(text, 'Figurines', "피규어"), 1)
+  text = string.sub(string.gsub(text, 'Props', "소품"), 1)
+  text = string.sub(string.gsub(text, 'Rooms', "방"), 1)
+  text = string.sub(string.gsub(text, 'Objects', "오브젝트"), 1)
+  text = string.sub(string.gsub(text, 'Original', "자작"), 1)
+  text = string.sub(string.gsub(text, 'Games', "게임"), 1)
+  text = string.sub(string.gsub(text, 'Game', "게임"), 1)
+  text = string.sub(string.gsub(text, '%sComplexity', "\n난이도"), 1)
+  text = string.sub(string.gsub(text, 'Complexity', "난이도"), 1)
+  text = string.sub(string.gsub(text, 'Low', "낮은"), 1)
+  text = string.sub(string.gsub(text, 'Medium', "중간"), 1)
+  text = string.sub(string.gsub(text, 'High', "어려운"), 1)
+  text = string.sub(string.gsub(text, 'NumberofPlayers', "\n인원수"), 1)
+  text = string.sub(string.gsub(text, 'PlayTime', "\n플레이 시간"), 1)
+  text = string.sub(string.gsub(text, 'minutes', "분"), 1)
+  text = string.sub(string.gsub(text, 'Assets', "\n에셋"), 1)
+  text = string.sub(string.gsub(text, 'UserInterfaces', "UI"), 1)
+  text = string.sub(string.gsub(text, 'Scripting', "스크립트"), 1)
+  text = string.sub(string.gsub(text, 'Automated', "자동화"), 1)
+  text = string.sub(string.gsub(text, 'Backgrounds', "\n배경"), 1)
+  text = string.sub(string.gsub(text, 'Tables', "테이블"), 1)
+  text = string.sub(string.gsub(text, 'Rules', "룰북"), 1)
+  text = string.sub(string.gsub(text, 'Language', "\n언어"), 1)
+  text = string.sub(string.gsub(text, 'Korean', "한국어"), 1)
+  text = string.sub(string.gsub(text, 'English', "영어"), 1)
+  return text
+end
+
+function getTags(html)
+  local result = "창작마당에 태그가 존재하지 않습니다."
+    local startpos = string.find(html, '<div class="rightDetailsBlock">', 1, true)
+    local endpos = string.find(html, '<div class="dotted_hr_uri hr padded"></div>', startpos, true)
+    if endpos == nil then
+      return result
+    end
+    html = string.sub(html, startpos, endpos-1)
+    html = string.gsub(html, "%s", '')
+    html = string.gsub(html, "%<.->%>-", ' ')
+    html = string.gsub(html, "&nbsp;", ' ')
+    -- html = string.gsub(html, "%g%:", '\n:')
+
+    -- setNotes(html)
+
+    if string.len(html) ~= 0 then
+    -- html = string.gsub(html, "(.-)%:&nbsp;", '\n%.-%:')
+    result = translation(html)
+     else result="창작마당에 태그가 존재하지 않습니다."
+     end
+    return result
+end
+
+function trim3(str)
+return string.sub(string.gsub(str, '<', ""), 1)
+end
+
+function trim4(str, delete)
+return string.sub(string.gsub(str, delete, ""), 1)
+end
+
+
+function HideUi()
+  self.UI.hide("deckSelectorUI")
+end
+
+function showUi()
+  self.UI.show("deckSelectorUI")
+end
+
+function trim(str)
+return string.sub(str, 2, -2)
+end
+
+function trim2(str)
+return string.sub(string.gsub(str, '"', ""), 1)
+end
+
+function string:split(delimiter)
+local result = { }
+local from = 1
+local delim_from, delim_to = string.find( self, delimiter, from )
+while delim_from do
+  table.insert( result, string.sub( self, from , delim_from-1 ) )
+  from = delim_to + 1
+  delim_from, delim_to = string.find( self, delimiter, from )
+end
+table.insert( result, string.sub( self, from ) )
+return result
+end

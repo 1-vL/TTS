@@ -1,0 +1,380 @@
+<Defaults>
+
+<!-- Panel -->
+  <Panel
+    class="headingPanel"
+    position="0 65 -21"
+    width="256"
+    height="200"
+    padding="0 0 0 0"
+    color="clear">
+  </Panel>
+
+  <Panel
+    class="tilePanel"
+    position="0 -25 -21"
+    width="99"
+    height="99"
+    padding="0 0 0 0"
+    color="black">
+  </Panel>
+
+  <Panel
+    class="deckSelectorPanel"
+    position="0 -1400 -2"
+    width="1500"
+    height="2500"
+    padding="10 10 10 10"
+    color="Black">
+  </Panel>
+
+  <Panel
+    class="settingsPanel"
+    position="795 -589 -2"
+    width="510"
+    height="563"
+    padding="10 10 10 10"
+    color="Black">
+  </Panel>
+
+  <Panel
+    class="zonePanel"
+    position="800 -1162.5 -2"
+    width="235"
+    height="327"
+    padding="10 10 10 10"
+    color="Black">
+  </Panel>
+
+  <Panel
+    class="zoneBorderPanel"
+    position="795 -1162 -2"
+    width="510"
+    height="605"
+    padding="10 10 10 10"
+    color="Black">
+  </Panel>
+
+<!-- Text -->
+  <Text
+    class="panelHeading"
+    color="#ffffff"
+    alignment="MiddleCenter"
+    fontSize="75">
+  </Text>
+
+  <Text
+    class="subheadingText"
+    color="#99aab5"
+    alignment="UpperMiddle"
+    fontSize="45">
+  </Text>
+
+  <Text
+    class="generalText"
+    color="#ffffff"
+    fontSize="40"
+    alignment="MiddleLeft">
+  </Text>
+
+  <Text
+    class="deckSizeText"
+    color="clear"
+    fontSize="20"
+    alignment="MiddleRight">
+  </Text>
+
+  <Text
+    class="showHideText"
+    color="#ffffff"
+    alignment="MiddleCenter"
+    fontSize="20">
+  </Text>
+
+<!-- Row -->
+  <Row
+    class="subheadingRow"
+    preferredHeight="150">
+  </Row>
+
+  <Row
+    class="generalRow"
+    preferredHeight="150">
+  </Row>
+
+  <Row
+    class="separatorRow"
+    preferredHeight="10"
+    dontUseTableRowBackground="True"
+    color="black">
+  </Row>
+
+  <Row
+    class="optionRow"
+    preferredHeight="50">
+  </Row>
+
+<!-- Toggle -->
+  <Toggle
+    class="checkbox"
+    scale="5 5"
+    isOn="False">
+  </Toggle>
+
+<!-- Button -->
+  <Button
+    class="tileButton"
+    padding="0 0 0 0"
+    image="3JA2">
+  </Button>
+
+  <Button
+    class="generalButton"
+    active="True"
+    preferredHeight="175"
+    color="#23272a"
+    padding="25 0 0 0">
+  </Button>
+
+<!-- Table Layout -->
+  <TableLayout
+    class="generalTable"
+    cellBackgroundColor="#23272a"
+    rowBackgroundColor="#23272a">
+  </TableLayout>
+
+  <TableLayout
+    class="columnSplit"
+    columnWidths="0 107"
+    useGlobalCellPadding="false"
+    cellBackgroundColor="clear">
+  </TableLayout>
+
+  <TableLayout
+    class="zoneTable"
+    rowBackgroundColor="#939393"
+    cellPadding="5 5 5 5">
+  </TableLayout>
+
+<!-- Cell -->
+  <Cell
+    class="titlesCell"
+    overrideGlobalCellPadding="True"
+    padding="25 25 0 0">
+  </Cell>
+
+  <Cell
+    class="checkboxCell"
+    overrideGlobalCellPadding="True"
+    padding="107 0 0 0">
+  </Cell>
+
+  <Cell
+    class="deckCountCell"
+    overrideGlobalCellPadding="True"
+    padding="0 50 0 0">
+  </Cell>
+
+  <Cell
+    class="zoneCell"
+    dontUseTableCellBackground="True"
+    color="clear">
+  </Cell>
+
+  <Cell
+    class="optionCell"
+    dontUseTableCellBackground="True"
+    color="clear">
+  </Cell>
+
+  <InputField
+     minHeight="150"
+     maxHeight="200"
+     noScrollbars="true"
+     fontSize="100">
+  </InputField>
+
+  <Image
+  image="dice">
+  </Image>
+
+  <Dropdown
+    class="PlayerNum"
+    position="200 70 -30"
+    width="1000"
+    height="600"
+    padding="0 0 0 0"
+    color="clear"
+    fontSize="100"></Dropdown>
+  <Dropdown
+    class="searchType"
+    position="300 70 -50"
+    width="1000"
+    height="600"
+    padding="0 0 0 0"
+    color="clear"
+    fontSize="100"></Dropdown>
+</Defaults>
+
+<!-- Tile Controller -->
+
+<Panel class="headingPanel">
+  <Text id="toggleMenuText" class="showHideText">한글 창작마당 선택기</Text>
+</Panel>
+
+<Panel class="tilePanel">
+  <Button id="tileShow" class="tileButton" onClick="help"></Button>
+</Panel>
+
+<!-- Deck Selector Panel -->
+<Panel id="deckSelectorUI" class="deckSelectorPanel">
+
+  <VerticalLayout spacing="50" childForceExpandHeight="false">
+    <Text class="panelHeading">보드게임 선택기</Text>
+    <InputField id="searchField" placeholder="갱신하시기 전에 검색어를 입력해주세요." onEndEdit="search" tooltip="키워드를 입력하고 목록 갱신을 눌러주세요."></InputField>
+
+    <TableLayout>
+      <Row class="optionRow">
+          <Cell class="optionCell">
+              <Text color="#ffffff" fontSize="15">한글 탐지 방식</Text>
+            <Dropdown id="searchType" onValueChanged="SearchOptionSelected">
+              <Option selected="true">즉시검색</Option>
+              <Option>한글</Option>
+              <Option>language:Korean</Option>
+            </Dropdown>
+          </Cell>
+          <Cell class="optionCell">
+              <Text color="#ffffff" fontSize="15">현재 인원수</Text>
+            <Dropdown id="playerNum" onValueChanged="PlayerNumSelected" scrollSensitivity="80" >
+              <Option selected="true">인원수</Option>
+              <Option>1</Option>
+              <Option>2</Option>
+              <Option>3</Option>
+              <Option>4</Option>
+              <Option>5</Option>
+              <Option>6</Option>
+              <Option>7</Option>
+              <Option>8</Option>
+              <Option>9</Option>
+              <Option>10+</Option>
+            </Dropdown>
+          </Cell>
+          <Cell class="optionCell">
+            <Text color="#ffffff" fontSize="15">플레이 시간</Text>
+            <Dropdown id="playTime" onValueChanged="TimeSelected" scrollSensitivity="80" >
+              <Option selected="true">선택 안 함</Option>
+              <Option>10 분</Option>
+              <Option>30 분</Option>
+              <Option>60 분</Option>
+              <Option>90 분</Option>
+              <Option>120 분</Option>
+              <Option>180+ 분</Option>
+            </Dropdown>
+          </Cell>
+          <Cell class="optionCell">
+            <Text color="#ffffff" fontSize="15">난이도</Text>
+            <Dropdown id="complexity" onValueChanged="ComplexitySelected">
+              <Option selected="true">선택 안 함</Option>
+              <Option>낮음</Option>
+              <Option>보통</Option>
+              <Option>높음</Option>
+            </Dropdown>
+          </Cell>
+          <Cell class="optionCell">
+                    <Button id="createDeckButton" preferredHeight="50" color="#3366ff" onClick="getList">
+                        <Text color="#ffffff" fontSize="30" id="hitBtn">검색</Text></Button>
+          </Cell>
+      </Row>
+    </TableLayout>
+    <!-- Headings -->
+    <VerticalScrollView minHeight="150" flexibleHeight="0" scrollSensitivity="100" noScrollbars="true">
+      <TableLayout class="generalTable" columnWidths="165 0 317" useGlobalCellPadding="false" autoCalculateHeight="false">
+        <Row class="subheadingRow">
+        <Cell><Text class="subheadingText">이미지</Text></Cell>
+          <Cell class="titlesCell"><Text class="subheadingText" alignment="MiddleLeft">게임 이름</Text></Cell>
+          <Cell><Toggle id="checkAll" onValueChanged="checkAll" class="checkbox"></Toggle><Text class="subheadingText">체크</Text></Cell>
+        </Row>
+      </TableLayout>
+    </VerticalScrollView>
+
+    <!-- Main Checklist -->
+    <VerticalScrollView flexibleHeight="1" scrollSensitivity="100">
+      <TableLayout id="targetList" class="generalTable" columnWidths="150 0 300" useGlobalCellPadding="false" autoCalculateHeight="true">
+
+        <!-- 예시 -->
+        <Row class="generalRow">
+        <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">현재 목록은 예시용 목록입니다.</Text></Cell>
+          <Cell><Toggle id="Check 1" class="checkbox"></Toggle></Cell>
+        </Row>
+
+                <!-- 예시 -->
+        <Row class="generalRow">
+      <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">기존 선택기가 모든 목록을 불러와 로딩이 느린 점을 감안해 검색할 키워드를 먼저 정하는 버전입니다.</Text></Cell>
+            <Cell><Toggle id="Check 2" class="checkbox"></Toggle></Cell>
+        </Row>
+
+                <!-- 예시 -->
+        <Row class="generalRow">
+      <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">검색어 설정에 따라 한글이 아닌 창작마당도 검색할 수 있으며, 검색어는 창작마당과 동일하게 띄어쓰기 단위로 일치해야 합니다.</Text></Cell>
+            <Cell><Toggle id="Check 5" class="checkbox"></Toggle></Cell>
+        </Row>
+
+                <!-- 예시 -->
+        <Row class="generalRow">
+      <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">가령, '크툴루를 건드리지 마'라는 게임은 '크툴루' 라고 검색시 찾지 못 할 수 있습니다.</Text></Cell>
+            <Cell><Toggle id="Check 5" class="checkbox"></Toggle></Cell>
+        </Row>
+
+                <!-- 예시 -->
+        <Row class="generalRow">
+      <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">갱신 중에는 로딩이 걸릴 수 있으니 주의해 주세요.</Text></Cell>
+            <Cell><Toggle id="Check 3" class="checkbox"></Toggle></Cell>
+        </Row>
+
+                <!-- 예시 -->
+        <Row class="generalRow">
+      <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">목록 필터링 기능을 사용하시려면 한글 탐색 방식이 즉시검색이 아닌 다른 방식으로 변경된 상태로 키워드를 입력해 주세요.</Text></Cell>
+            <Cell><Toggle id="Check 4" class="checkbox"></Toggle></Cell>
+        </Row>
+
+                <!-- 예시 -->
+        <Row class="generalRow">
+      <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">인원수 옵션은 창작마당 태그를 기준으로 해당 인원수 태그를 가진 게임을 불러옵니다.</Text></Cell>
+            <Cell><Toggle id="Check 5" class="checkbox"></Toggle></Cell>
+        </Row>
+
+
+                <!-- 예시 -->
+        <Row class="generalRow">
+      <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">지도 아이콘을 누르면 체크된 항목들의 카드들을 불러옵니다.</Text></Cell>
+            <Cell><Toggle id="Check 6" class="checkbox"></Toggle></Cell>
+        </Row>
+
+                <!-- 예시 -->
+        <Row class="generalRow">
+      <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">이 목록은 창작마당을 기준으로 자동으로 갱신됩니다.</Text></Cell>
+            <Cell><Toggle id="Check 7" class="checkbox"></Toggle></Cell>
+        </Row>
+
+                <!-- 예시 -->
+        <Row class="generalRow">
+      <Cell><Image class = "cardImage"></Image></Cell>
+          <Cell class="titlesCell"><Text class="generalText">by 3JA2</Text></Cell>
+            <Cell><Toggle id="Check 8" class="checkbox"></Toggle></Cell>
+        </Row>
+
+      </TableLayout>
+    </VerticalScrollView>
+
+    <!-- Create Deck Button -->
+  </VerticalLayout>
+</Panel>

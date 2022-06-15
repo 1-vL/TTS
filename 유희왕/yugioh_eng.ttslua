@@ -1,0 +1,705 @@
+names = {}
+images = {}
+descs = {}
+tags = {}
+penDescs = {}
+checked = {}
+keyword = ""
+
+name_len = 0
+image_len = 0
+cnt = 0
+searchType = 'Card Search'
+
+function help(player, click, value)
+  if self.UI.getCustomAssets()[1] == nil then
+    self.UI.setCustomAssets({
+    {
+      name='dice',
+      url='http://cloud-3.steamusercontent.com/ugc/1854925792342110286/7DBAC3171D07DCEA66DAA0CEF7185A0962AB46B2/'
+    },
+    {
+      name='3JA2',
+      url='https://avatars.akamai.steamstatic.com/e71c472be66dc59a34373c90496b3f54cfc914c3_full.jpg'
+    },
+    })
+  end
+  if click == '-1' then
+    spawnDeck()
+    print('selecetd cards been imported.')
+  elseif click == '-2' then
+    if cnt % 2 == 0 then
+      HideUi()
+    else
+      showUi()
+    end
+    cnt = cnt + 1
+  end
+end
+
+function SearchOptionSelected(player, option, id)
+  searchType = option
+  --print(option)
+  if searchType == 'Card Search' then
+      --self.UI.setAttribute('createDeckButton', 'onClick', '#searchCard')
+      self.UI.setAttribute('createDeckButton', 'color', '#3366ff')
+  else
+      --self.UI.setAttribute('createDeckButton', 'onClick', '#searchDeck')
+      self.UI.setAttribute('createDeckButton', 'color', '#31b32b')
+  end
+  --self.UI.setAttribute('searchField', 'text', '')
+
+end
+
+function getKeyword(player, getkeyword, searchBarId)
+    --print(getkeyword)
+    keyword = getkeyword
+end
+
+function search()
+  if keyword ~= "" then
+    --print(searchType)
+    if searchType == 'Card Search' then
+      searchCard()
+    elseif searchType == 'import Deck' then
+      searchDeck()
+    end
+  end
+end
+
+function spawnDeck(player, value, id)
+  for i = 1, #names do
+    if self.UI.getAttribute('Check ' .. i, 'isOn') == 'true' then
+      spawnCard(player, i, id)
+    end
+  end
+end
+
+function checkAll()
+local flag = self.UI.getAttribute('checkAll', 'isOn')
+local whole = #names
+    for i = 1, whole do
+      if self.UI.getAttribute('Check ' .. i, 'isOn') == 'true' then
+        self.UI.setAttribute('Check ' .. i, 'isOn', 'false')
+      elseif self.UI.getAttribute('Check ' .. i, 'isOn') == 'false' then
+        self.UI.setAttribute('Check ' .. i, 'isOn', 'true')
+      end
+    end
+end
+
+function checkCard(player, value, id)
+  local flagNow = self.UI.getAttribute('Check ' .. value, 'isOn')
+  if flagNow == 'false' then
+    self.UI.setAttribute('Check ' .. value, 'isOn', 'true')
+  elseif flagNow == 'true' then
+    self.UI.setAttribute('Check ' .. value, 'isOn', 'false')
+  end
+end
+
+function spawnCard(player, value, id)
+  rowNum = tonumber(value)
+  --print(rowNum)
+  newCard = spawnObject({
+  type = 'Card',
+  position = self.positionToWorld({0,3,3}),
+  rotation = self.getRotation() + vector(0, 180, 0),
+  })
+
+newCard.setCustomObject({
+  face = images[rowNum],
+  back = 'http://cloud-3.steamusercontent.com/ugc/1778353420788008710/1CE0C26D55A265AC62288B21E75CDA15D894CE63/',
+})
+-- setNotes(images[rowNum])
+-- setNotes(images[rowNum])
+-- setNotes(names[rowNum])
+-- setNotes(tags[rowNum])
+-- setNotes(descs[rowNum])
+-- setNotes(penDescs[rowNum])
+newCard.setName(names[rowNum] .. "\n\n" .. tags[rowNum])
+newCard.setDescription(descs[rowNum])
+newCard.setGMNotes(penDescs[rowNum])
+local scriptText = 'function onload()penEffect=self.getGMNotes()name="["..string.sub(self.getName(),1,string.find(self.getName(),"\\n\\n",1)-1).."]"if penEffect==nil or penEffect==""then self.UI.setXmlTable({{tag="Panel",attributes={id="all"},children={{tag="Panel",attributes={position="0 108 -100",height="36",width="180",color="rgba(0,0,0,0)",padding="0 5 0 0",spacing="0",fontSize="0.01",alignment="UpperLeft",},children={{tag="Button",attributes={id="descText",alignment="UpperLeft",resizeTextForBestFit="true",resizeTextMaxSize="0.01",position="0 105 0",rotation="0 0 180",horizontalOverflow="Wrap",width="140",color="clear",onClick="desc",},value=tostring(self.getDescription()),}},},},}})else self.UI.setXmlTable({{tag="Panel",attributes={id="all"},children={{tag="Panel",attributes={position="0 108 -100",height="36",width="180",color="rgba(0,0,0,0)",padding="0 5 0 0",spacing="0",},children={{tag="Button",attributes={id="descText",alignment="UpperLeft",resizeTextForBestFit="true",resizeTextMaxSize="0.01",position="0 105 0",rotation="0 0 180",horizontalOverflow="Wrap",width="140",color="clear",onClick="desc",},value=tostring(self.getDescription()),}},},{tag="Panel",attributes={position="0 60 -100",height="30",width="180",color="rgba(0,0,0,0)",padding="20 20 0 0",spacing="0",},children={{tag="Button",attributes={id="penText",alignment="UpperLeft",resizeTextForBestFit="true",resizeTextMaxSize="0.01",position="0 105 0",rotation="0 0 180",horizontalOverflow="Wrap",color="clear",onClick="penDesc",},value=tostring(penEffect),},},},},}})end end function onObjectEnterZone(zone,enter_object)if zone.tag=="Hand"and enter_object==self then self.UI.setAttribute("all","visibility",zone.getValue())end end function onObjectLeaveZone(zone,leave_object)if zone.tag=="Hand"and leave_object==self then self.UI.setAttribute("all","visibility","White|Brown|Red|Orange|Yellow|Green|Teal|Blue|Purple|Pink|Grey|Black")end end function penDesc(player,click,value)if click=="-1"then printToAll("Pendulum Effect of "..name..": "..penEffect)else print("Just to me: Pendulum Effect of "..name..": "..penEffect)end end function desc(player,click,value)if click=="-1"then printToAll("Effect of "..name..": "..self.getDescription())else print("Just to me: Effect of "..name..": "..self.getDescription())end end'
+newCard.setLuaScript(scriptText)
+
+end
+
+function imageCut(html)
+  local startword = "$('#card_image_%d_%d').attr('src', '"
+  local endword = "').show()"
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local image = string.sub(html, startpos, endpos)
+  image = trim(string.sub(image, string.len(startword)+10))
+  image = trimImg(image)
+  --print(image)
+    image = 'https://www.db.yugioh-card.com' .. image .. '&app=tournament&request_locale=en'
+
+  --setNotes(getNotes() .. image .. "\n")
+  --print(image)
+  return image
+end
+
+function nameCut(html)
+  local startword = '<span class="card_name">'
+  local endword = '</span>'
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local name = string.sub(html, startpos, endpos)
+  name = trim(string.sub(name, string.len(startword)))
+  name = trim2(name)
+  name = escape(name)
+  return name
+end
+
+function descCut(html)
+  local startword = '<dd class="box_card_text c_text flex_'
+  local endword = '</dd>'
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local desc = string.sub(html, startpos, endpos)
+  desc = trim(string.sub(desc, string.len(startword)))
+  desc = string.gsub(desc, '	*', '')
+  desc = trim2(desc)
+  desc = trim3(desc)
+  desc = trimBr(desc)
+  desc = escape(desc)
+  return desc
+end
+
+function imgZoneDeck(html)
+if string.find(html, "theme: 'stype_en'", 1, true) ~= nil then
+  local startpos = string.find(html, "theme: 'stype_en'", 1, true)
+  local endpos = string.find(html, "$('#thumbnail img').click(function(){", startpos, true)
+  html = string.sub(html, startpos, endpos)
+  return html
+else return 'Results not found!'
+  end
+end
+
+function imageCutDeck(html)
+  local startword = "$('#card_image_1').attr('src', '"
+  local endword = ").show();"
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local image = string.sub(html, startpos, endpos)
+  -- print(startpos)
+  -- print(endpos)
+  -- print(image)
+  image = trim(string.sub(image, string.len(startword)+10))
+  image = trimImg(image)
+  image = string.gsub(image, '	*', '')
+  image = string.gsub(image, '\n', '')
+  image = 'https://www.db.yugioh-card.com/yugiohdb/' .. image .. '&app=tournament&request_locale=en'
+
+  --setNotes(getNotes() .. image .. "\n")
+  return image
+end
+
+function nameCutDeck(html)
+  local startword = '<img id="card_image_1" alt="'
+  local endword = '" title="'
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  -- print(startpos)
+  local name = ""
+  if startpos ~= nil then
+    name = string.sub(html, startpos, endpos)
+  end
+    -- name = string.gsub(name, "%-.", '걸림')
+    name = trim(string.sub(name, string.len(startword)))
+    name = escape(name)
+    --name = trim(name)
+    --name = trim2(name)
+    --name = string.gsub(name, '<h1>', '')
+    --name = string.gsub(name, '\n', '')
+    -- print(name)
+    return name
+end
+
+function descCutDeck(html)
+  local startword = 'Card Text'
+  local endword = '<!-- CardText -->'
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local desc = string.sub(html, startpos, endpos)
+  desc = trim(string.sub(desc, string.len(startword)))
+  desc = string.gsub(desc, '	*', '')
+  desc = trim2(desc)
+  desc = trim3(desc)
+  desc = trimBr(desc)
+  desc = string.gsub(desc, '</div>', '')
+  desc = string.gsub(desc, '%n', '')
+  desc = escape(desc)
+  return desc
+end
+
+function PenDescCutDeck(html)
+  local startword = '<div class="frame pen_effect">'
+  local endword = '</div>'
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local desc = string.sub(html, startpos, endpos)
+  desc = string.gsub(desc, '<div class="item_box_text">', '')
+  desc = trim(string.sub(desc, string.len(startword)))
+  desc = trim2(desc)
+  desc = trim3(desc)
+  desc = trimBr(desc)
+
+  -- setNotes(desc)
+  -- desc = string.sub(desc, 40)
+  if startpos ~= nil then
+    return desc
+  else
+    return ""
+  end
+end
+
+function tagZoneCutDeck(html)
+  if string.find(html, '<div id="CardTextSet">', 1, true) ~= nil then
+    local startpos = string.find(html, '<div id="CardTextSet">', 1, true)
+    local endpos = string.find(html, '<!-- #CardTextSet -->', startpos, true)
+    html = string.sub(html, startpos, endpos)
+    --setNotes(html)
+    --setNotes(getNotes() .. html .. "\n")
+    return html
+  else return 'Results not found!'
+    end
+end
+
+function tagCutDeck(html)
+  -- 빈칸 제거 후 <sapn> 속 모두 "\n"으로 대체
+  if string.find(html, '<div id="CardTextSet">', 1, true) ~= nil then
+  -- html = string.gsub(html, "물족", 'waterwhr')
+  -- html = string.gsub(html, "물 ", 'water ')
+  --setNotes(html)
+  html = string.gsub(html, "\n", '')
+  html = string.gsub(html, "%<.->%>-", ' ')
+  html = string.gsub(html, "<", '')
+
+  html = string.gsub(html, "]", ']\n')
+  -- html = string.gsub(html, "waterwhr", '물족')
+  -- html = string.gsub(html, "water", '물')
+
+  html = string.gsub(html, "%s-Attribute", 'Attribute')
+  -- html = string.gsub(html, "Attribute%s-Level", '물  Level')
+  -- html = string.gsub(html, "Attribute%s-Rank", '물  Rank')
+  -- html = string.gsub(html, "Attribute%s-Lick", '물  Lick')
+  html = string.gsub(html, "Attribute", '')
+  html = string.gsub(html, "Level%s-Level", 'Level')
+  html = string.gsub(html, "Rank%s-Rank", 'Rank')
+  html = string.gsub(html, "Lick%s-Lick", 'Lick')
+  html = string.gsub(html, "%s-ATK", '\n    ATK')
+  local def = string.match(html, "DEF%s*%d*", 1)
+  if def ~= nil then
+    html = string.gsub(html, def, def .. '\n')
+  end
+  html = string.gsub(html, "-", '')
+  html = string.gsub(html, "DEF%s*\n", 'DEF   -\n')
+  --first = string.
+  --html = string.gsub(html, " ", '')
+  --setNotes(html)
+    return html
+  else return 'Results not found!'
+    end
+end
+
+
+function PenDescCut(html)
+  local startword = '<span class="box_card_pen_effect c_text flex_'
+  local endword = '</span>'
+  local startpos = string.find(html, startword, 1, true)
+  local endpos = string.find(html, endword, startpos, true)
+  local desc = string.sub(html, startpos, endpos)
+  desc = trim(string.sub(desc, string.len(startword)))
+  desc = trim2(desc)
+  desc = trim3(desc)
+  desc = trimBr(desc)
+  if startpos ~= nil then
+    return desc
+  else
+    return ""
+  end
+end
+
+function zone(html)
+if string.find(html, '<div class="t_row c_normal">', 1, true) ~= nil then
+  local startpos = string.find(html, '<div class="t_row c_normal">', 1, true)
+  local endpos = string.find(html, '<!--#article_body-->', startpos, true)
+  html = string.sub(html, startpos, endpos)
+  return html
+else return 'Results not found!'
+  end
+end
+
+function linkCut(html)
+  if string.find(html, '<a target="_blank" href="', 1, true) ~= nil then
+    local startpos = string.find(html, '<a target="_blank" href="', 1, true)
+    local endpos = string.find(html, '">', startpos, true)
+    -- print(startpos)
+    -- print(endpos)
+
+    html = string.sub(html, startpos, endpos)
+    html = string.gsub(html, '<a target="_blank" href="', 'https://www.db.yugioh-card.com')
+    html = string.gsub(html, '">', '&request_locale=en')
+    html = string.gsub(html, '"', '')
+        -- print(html)
+    return html
+  else return 'Results not found!'
+    end
+end
+
+function tagCut(html)
+  -- 빈칸 제거 후 <sapn> 속 모두 "\n"으로 대체
+  if string.find(html, 'box_card_spec flex', 1, true) ~= nil then
+  -- html = string.gsub(html, "물족", 'waterwhr')
+  -- html = string.gsub(html, ">물<", '>water<')
+  --setNotes(html)
+  html = string.gsub(html, "\n", '')
+  html = string.gsub(html, "%<.->%>-", ' ')
+  html = string.gsub(html, "<", '')
+
+  html = string.gsub(html, "]", ']\n')
+  -- html = string.gsub(html, "waterwhr", '물족')
+  -- html = string.gsub(html, "water", '물')
+  --first = string.
+  --html = string.gsub(html, " ", '')
+  --setNotes(html)
+    return html
+  else return 'Results not found!'
+    end
+end
+
+function tagZoneCut(html)
+  if string.find(html, '<dd class="box_card_spec flex', 1, true) ~= nil then
+    local startpos = string.find(html, '<dd class="box_card_spec flex', 1, true)
+    local endpos = string.find(html, '</dd>', startpos, true)
+    html = string.sub(html, startpos, endpos)
+    --setNotes(html)
+    return html
+  else return 'Results not found!'
+    end
+end
+
+function getPageNum(html)
+  local pageEnd = string.find(html, '<!--#article_body-->', 10000, true)
+  html = string.sub(html, pageEnd-100, pageEnd)
+  local startpos = string.find(html, 'title="Page ', 1, false)
+  if startpos == nil then
+    return 1
+  elseif startpos > 5 then
+    startpos = startpos-5
+  end
+  local endpos = string.find(html, 'title="Page ', startpos, false)
+  num = string.sub(html, startpos+16, endpos+12)
+  --num = string.sub(num, string.find(num, '">', -10, true) + 2 , -2)
+  -- print(endpos)
+  -- print(num)
+  return tonumber(num)
+end
+
+
+function deckZone(html)
+if string.find(html, '<div class="image_set">', 1, true) ~= nil then
+  local startpos = string.find(html, '<div class="image_set">', 1, true)
+  local endpos = string.find(html, '<!--#article_body-->', startpos, true)
+  html = string.sub(html, startpos, endpos)
+  return html
+else return 'Results not found!'
+  end
+end
+
+function deckCardZone(html)
+if string.find(html, '<div id="article_body">', 1, true) ~= nil then
+  local startpos = string.find(html, '<div id="article_body">', 1, true)
+  local endpos = string.find(html, '<div class="bottom">', startpos, true)
+  html = string.sub(html, startpos, endpos)
+  return html
+else return 'Results not found!'
+  end
+end
+
+function imgZone(html)
+if string.find(html, "$('#mode').trigger('change');", 1, true) ~= nil then
+  local startpos = string.find(html, "$('#mode').trigger('change');", 1, true)
+  local endpos = string.find(html, "$('.t_row').click(function() {", startpos, true)
+  html = string.sub(html, startpos, endpos)
+  return html
+else return 'Results not found!'
+  end
+end
+
+function searchDeck()
+  print("Deck Importing...")
+  lastpagenum = 1
+  menuY = (lastpagenum * 75 ) * -1
+  menuHeight = lastpagenum * 300
+  names = {}
+  images = {}
+  descs = {}
+  penDescs = {}
+  tags = {}
+
+  WebRequest.get(keyword, function(request)
+    raw_data = deckZone(request.text)
+    --print(request.response_code)
+    -- setNotes(raw_data)
+
+    if raw_data ~= 'Results not found!' then
+    local cards = string.split(raw_data, '<div><span></span></div></span>')
+    for i, card in ipairs(cards) do
+      local link = linkCut(card)
+
+      WebRequest.get(link, function(card_request)
+        local raw_card = card_request.text
+        -- print(card_request.response_code)
+        card_data = deckCardZone(raw_card)
+
+        local img = imageCutDeck(imgZoneDeck(raw_card))
+        -- setNotes(card_data)
+        --print(img)
+        local name = nameCutDeck(card_data)
+        local desc = descCutDeck(card_data)
+        --setNotes(getNotes() .. "\n" .. desc)
+
+        local penDesc = PenDescCutDeck(card_data)
+        --local penDesc = ""
+        local tagZone = tagZoneCutDeck(card_data)
+        local tag = tagCutDeck(tagZone)
+        if name ~= '' then
+          --print(name)
+          table.insert(names, #names+1, name)
+          table.insert(images, #images+1, img)
+          table.insert(descs, #descs+1, desc)
+          table.insert(tags, #tags+1, tag)
+          table.insert(penDescs, #penDescs+1, penDesc)
+        end
+
+      end) -- returns and passes to callback:
+        -- download_progress    bool      (0.0 - 1.0)
+        -- error                string
+        -- is_error             bool
+        -- is_done              bool
+        -- text                 string
+        -- upload_progress      bool      (0.0 - 1.0)
+        -- url                  string
+    end
+    end
+    --print(pagenum .. '페이지 갱신')
+  end) -- 페이지 1개 가져오기 종료
+   -- returns and passes to callback:
+    -- download_progress    bool      (0.0 - 1.0)
+    -- error                string
+    -- is_error             bool
+    -- is_done              bool
+    -- text                 string
+    -- upload_progress      bool      (0.0 - 1.0)
+    -- url                  string
+        Wait.frames(function()
+          updateXML()
+        end, 300)
+      searchType = 'import Deck'
+      checked = {}
+end
+
+function searchCard()
+      print('search by "' .. keyword .. '" keyword')
+      fullUrl = 'https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&sort=1&rp=100&stype=1&othercon=2&request_locale=en&keyword=' .. keyword .. '&page='
+
+    WebRequest.get(fullUrl, function(numrequest)
+        num_data1 = numrequest.text
+  lastpagenum = getPageNum(num_data1)
+  menuY = (lastpagenum * 75 ) * -1
+  menuHeight = lastpagenum * 300
+  names = {}
+  images = {}
+  descs = {}
+  penDescs = {}
+  tags = {}
+  --print(lastpagenum)
+for pagenum = 1, lastpagenum do
+  local url = fullUrl .. pagenum
+
+  WebRequest.get(url, function(request)
+    raw_data1 = request.text
+    --setNotes(raw_data1)
+    imgraw = imgZone(raw_data1)
+    local cards = string.split(imgraw, ';')
+    for i, card in ipairs(cards) do
+      local img = imageCut(card)
+      --print(img)
+      if img~="https://www.db.yugioh-card.com&app=tournament&request_locale=en" then
+        table.insert(images, #images+1, img)
+      end
+    end
+    --table.remove(images, 1)
+    --table.remove(images, 1)
+    raw_data = zone(raw_data1)
+    --setNotes(raw_data)
+    --setNotes(raw_data)
+
+
+    if raw_data ~= 'Results not found!' then
+    local cards = string.split(raw_data, '<div class="t_row c_normal">')
+    for i, card in ipairs(cards) do
+      local name = nameCut(card)
+      local desc = descCut(card)
+      local penDesc = PenDescCut(card)
+      --setNotes(penDesc)
+      local tagZone = tagZoneCut(card)
+      local tag = tagCut(tagZone)
+      if name ~= '' and name ~= ' ' and name ~= '					'  and name ~= nil then
+        table.insert(names, #names+1, name)
+        table.insert(descs, #descs+1, desc)
+        table.insert(penDescs, #penDescs+1, penDesc)
+        table.insert(tags, #tags+1, tag)
+      end
+    end
+    end
+    --print(pagenum .. '페이지 갱신')
+  end) -- 페이지 1개 가져오기 종료
+end -- 페이지 반복문 종료
+   -- returns and passes to callback:
+    -- download_progress    bool      (0.0 - 1.0)
+    -- error                string
+    -- is_error             bool
+    -- is_done              bool
+    -- text                 string
+    -- upload_progress      bool      (0.0 - 1.0)
+    -- url                  string
+
+
+
+        Wait.frames(function()
+          updateXML()
+            --self.UI.setValue('hitBtn', '가져오기')
+            --self.UI.setAttribute('createDeckButton', 'color', '#3366ff')
+        end, 150)
+      end)
+      searchType = 'Card Search'
+      keyword = ""
+      checked = {}
+end
+
+
+function updateXML()
+    local uiXML = self.UI.getXmlTable()
+    --local tableLayout = uiXML[4].children[1].children[5].children[1].children
+    uiXML[4].children[1].children[5].children[1].children = {}
+    for i = 1, #names do
+      local name = names[i]
+      local image = images[i]
+        --print(name)
+
+          table.insert(uiXML[4].children[1].children[5].children[1].children, 1, {
+              tag = 'Row',
+              attributes = { class='generalRow', id = 'Row ' .. i, name = name, image = image,
+            },
+                children={
+                {
+                tag = 'Cell', -- 이미지 셀
+                children = {
+                  {
+                    tag = 'Image',
+                    attributes = {class = 'cardImage', image = 'dice'}
+                  }
+                }
+              }, -- 이미지 셀 종료
+                  {
+                    tag = 'Cell',
+                    attributes = { class='titlesCell', },
+                      children={
+                        {
+                          tag = 'Text',
+                            attributes = { text = name, class = 'generalText', id = 'Text ' .. i, onClick='spawnCard(' .. i .. ')', },
+                            value = name,
+                        }
+                    },
+                  },
+                  {
+                      tag = 'Cell', -- 체크셀
+                      children = {
+                        tag = 'Toggle',
+                        attributes = { class='checkbox', id = 'Check ' .. i, onClick='checkCard(' .. i .. ')', isOn='false', },
+                      },
+                  },
+              },
+          }) -- 전체 행
+      end
+    self.UI.setXmlTable(uiXML)
+    --self.UI.setAttribute('createDeckButton', 'onClick', 'search')
+
+    print('total ' .. #names .. ' cards been updated.')
+end
+
+function pretty(desc)
+local result = ''
+local tagNames = string.split(desc, '<(%w+)>')
+ for _, tagName in ipairs(tagNames) do
+     tagName = string.gsub(tagName, '%b<>', '')
+     result = result .. tagName
+   end
+   result = string.sub(result, 1, -2)
+  return result
+end
+
+function HideUi()
+  self.UI.hide('deckSelectorUI')
+end
+
+function showUi()
+  self.UI.show('deckSelectorUI')
+end
+
+function trim(str)
+return string.sub(str, 2, -2)
+end
+
+function trim2(str)
+return string.sub(string.gsub(str, "'", ''), 1)
+end
+
+function trim3(str)
+return string.sub(string.gsub(str, '%d">', ''), 1)
+end
+
+function trimImg(str)
+  str = string.sub(string.gsub(str, " ", ''), 1)
+  str = string.sub(string.gsub(str, "'", ''), 1)
+  str = string.sub(string.gsub(str, ",", ''), 1)
+return str
+end
+
+
+function trimBr(str)
+str = string.sub(string.gsub(str, "       ", ''), 1)
+return string.sub(string.gsub(str, "<br>", '\n'), 1)
+end
+
+function escape(str)
+  str = string.gsub(str, '&amp;', '&')
+  str = string.gsub(str, '&lt;', '<')
+  str = string.gsub(str, '&gt;', '>')
+  str = string.gsub(str, '&forall;', '∀')
+  str = string.gsub(str, '&alpha;', 'α')
+  str = string.gsub(str, '&beta;', 'β')
+  str = string.gsub(str, '&delta;', 'δ')
+  str = string.gsub(str, '&epsilon;', 'ε')
+  str = string.gsub(str, '&gamma;', 'γ')
+  str = string.gsub(str, '&Omega;', 'Ω')
+  str = string.gsub(str, '&Lambda;', 'Λ')
+  str = string.gsub(str, '&mu;', 'μ')
+  return str
+end
+
+function string:split(delimiter)
+local result = { }
+local from = 1
+local delim_from, delim_to = string.find( self, delimiter, from )
+while delim_from do
+  table.insert( result, string.sub( self, from , delim_from-1 ) )
+  from = delim_to + 1
+  delim_from, delim_to = string.find( self, delimiter, from )
+end
+table.insert( result, string.sub( self, from ) )
+return result
+end

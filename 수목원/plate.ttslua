@@ -1,0 +1,217 @@
+SixSymbolColor = {White = '[FFFFFF]', Brown = '[703A16]', Red = '[DA1917]', Orange = '[F3631C]',
+    Yellow = '[E6E42B]', Green = '[30B22A]', Teal = '[20B09A]', Blue = '[1E87FF]',
+    Purple = '[9F1FEF]', Pink = '[F46FCD]'}
+TreeSixSymbolColor = {['카시아']='[E6E42B]', ['단풍나무']='[DA1917]', ['떡갈나무']='[703A16]', ['라일락']='[1E87FF]', ['올리브']='[20B09A]', ['자카란다']='[9F1FEF]', ['목련']='[F46FCD]', ['버드나무']='[30B22A]', ['층층나무']='[FFFFFF]', ['봉황목']='[F3631C]'}
+-- self.setInvisibleTo(Player.getAvailableColors())
+function onLoad(save_state)
+  -- myColor = string.split(tostring(self.getColorTint()), " ")[2]
+    myColor = self.getGMNotes()
+  -- self.createButton({ click_function = 'inputMap',
+  --                     label = '체크1',
+  --                     function_owner = self,
+  --                     position = {0, 0.3, -2},
+  --                     rotation = {0, 0, 0},
+  --                     width = 1000,
+  --                     height = 500,
+  --                     font_size = 200})
+end
+dirs = {{['x'] = -1,['y'] = 0}, {['x'] = 1,['y'] = 0}, {['x'] = 0,['y'] = -1}, {['x'] = 0,['y'] = 1}}
+-- dirs = {{-1,0}, {1,0}, {0,-1}, {0,1}}
+
+function scoring(owned)
+  -- print("계산 시작")
+  myScores = {['카시아']=0, ['단풍나무']=0, ['떡갈나무']=0, ['라일락']=0, ['올리브']=0, ['자카란다']=0, ['목련']=0, ['버드나무']=0, ['층층나무']=0, ['봉황목']=0}
+  myOwned = owned
+  local myRights = SixSymbolColor[myColor] .. Player[myColor].steam_name .. "[FFFFFF]님이 "
+    for type in pairs(owned) do
+      if owned[type] then
+        -- print(color ..": ".. type .. " " .. tostring(owned[color][type]))
+        -- print(myColor ..": ".. type)
+        myRights = myRights .. TreeSixSymbolColor[type] .. type .. "[FFFFFF], "
+      end
+    end
+
+    myRights = string.sub(myRights, 1, string.len(myRights)-2) .. "에 대한 권리를 가집니다!"
+    printToAll(myRights)
+    inputMap()
+end
+
+function inputMap()
+  totalScore = 0
+  snaps = self.getSnapPoints() -- returns:
+  	-- {{Vector position, Vector rotation, bool rotation_snap}, ...}
+      input = {}
+      map = {}
+      for i=1,80 do
+        table.insert(input, #input+1, "nil")
+      end
+      local cards = findHitsInRadius(self.getPosition(), 30)
+      for i, snap in ipairs(snaps) do
+        -- print(snap.position)
+        for j, ob in ipairs(cards) do
+          local o = ob.hit_object
+          if o.tag == "Card" then
+            local oPos = self.positionToLocal(o.getPosition())
+        -- print(o.getName())
+        -- print(o.getName() .. "  " .. oPos.x)
+          -- print(snap.position)
+            if compareSnap(snap.position, oPos) then
+            -- print(o.getName() .. tostring(snap.position))
+              -- o.setLock(true)
+              table.insert(input, i, o)
+            end
+          end
+        end
+      end
+    readInput()
+end
+
+function readInput()
+  startList = {}
+  for i=1, 8 do
+    for j=1, 10 do
+      local obj = input[(i-1)*10+j]
+      if obj ~= "nil" then
+        -- print("x:" .. i .. " y:" .. j .. " " .. input[(i-1)*10+j].getName())
+        local type = string.split(obj.getName(), " ")[1]
+        local num = tonumber(string.split(obj.getName(), " ")[2])
+        table.insert(map, #map+1, {
+          ['x'] = i,
+          ['y'] = j,
+          ['type'] = type,
+          ['num'] = num,
+          ['object'] = obj})
+          for oType in pairs(myOwned) do
+            if type == oType and num ~= 8 then
+              table.insert(startList, #startList+1, {
+                ['x'] = i,
+                ['y'] = j,
+                ['type'] = type
+              })
+            end
+          end
+        else
+          table.insert(map, #map+1, {
+            ['x'] = i,
+            ['y'] = j,
+            ['type'] = "",
+            ['num'] = 0,
+            ['object'] = nil})
+      end
+    end
+  end
+
+  for _, pos in ipairs(startList) do
+    -- print(pos.x .. " " .. pos.y)
+    -- print((pos.x-1)*10+pos.y)
+    local ni = (pos.x-1)*10+pos.y
+    -- print(ni)
+    local oneCheck = false
+    local cur = map[ni]
+    -- print(cur)
+    if cur.num == 1 then
+      oneCheck = true
+    end
+    if pos.x ~= nil and pos.y ~= nil then
+      dfs(pos.x, pos.y, pos.type, oneCheck, 1, 1)
+    end
+  end
+
+  local myScoreSheet = "\n" .. SixSymbolColor[myColor] .. Player[myColor].steam_name .. "[FFFFFF]님의 점수표:\n"
+
+  for sco in pairs(myScores) do
+    if myOwned[sco] then
+      totalScore = totalScore + myScores[sco]
+      myScoreSheet = myScoreSheet .. TreeSixSymbolColor[sco] .. sco .. " " .. myScores[sco] .. "[FFFFFF]점, "
+    end
+  end
+  myScoreSheet = string.sub(myScoreSheet, 1, string.len(myScoreSheet)-2) .. "\n" .. SixSymbolColor[myColor] .. Player[myColor].steam_name .. "님의 총점: " .. totalScore .. "점\n"
+  printToAll(myScoreSheet)
+end
+
+function dfs(x, y, type, isStartWithOne, depth, typeCnt)
+    local ni = (x-1)*10+y
+    local cur = map[ni]
+		local curVal = cur.num
+    -- print(cur.type .. curVal .. ":" .. ni)
+		if (cur.type == type and depth > 1) then
+				local compareScore = depth
+				if depth == typeCnt and typeCnt >= 4 then
+          compareScore = compareScore + typeCnt
+
+          -- broadcastToAll(type .. curVal .. " " .. typeCnt)
+
+        end
+				if isStartWithOne then
+          compareScore = compareScore + 1
+        end
+				if curVal == 8 then
+          compareScore = compareScore + 2
+        end
+				if myScores[type] < compareScore then
+					myScores[type] = math.max(myScores[type], compareScore)
+					-- maxEndX = x
+					-- maxEndY = y
+        end
+    end
+		-- for i, dir in ipairs(dirs) do
+    --   print(tostring(dir))
+    -- end
+		for i, dir in ipairs(dirs) do
+  			local nx = x + dir.x
+  			local ny = y + dir.y
+        if rangeCheck(nx, ny) then
+        local next = map[(nx-1)*10+ny]
+    			if next.num > curVal then
+        				if next.type ~= type then
+                  dfs(nx, ny, type, isStartWithOne, depth + 1, typeCnt)
+                else
+                  dfs(nx, ny, type, isStartWithOne, depth + 1, typeCnt + 1)
+                end
+          end
+        end
+    end
+end
+
+function compareSnap(snapPos, cardPos)
+  if math.floor(snapPos.x*50) == math.floor(cardPos.x*50) and math.floor(snapPos.z*50) == math.floor(cardPos.z*50) then
+    return true
+  else
+  return false
+  end
+end
+
+function rangeCheck(x, y)
+  if 1 <= x and x <= 8 and 1 <= y and y <= 10 then
+    return true
+  else
+		return false
+  end
+end
+
+function string:split(delimiter)
+local result = { }
+local from = 1
+local delim_from, delim_to = string.find( self, delimiter, from )
+while delim_from do
+  table.insert( result, string.sub( self, from , delim_from-1 ) )
+  from = delim_to + 1
+  delim_from, delim_to = string.find( self, delimiter, from )
+end
+table.insert( result, string.sub( self, from ) )
+return result
+end
+
+function findHitsInRadius(pos, radius)
+    local radius = (radius or 1)
+    local hitList = Physics.cast({
+        origin       = pos,
+        direction    = {0,1,0},
+        type         = 3,
+        size         = {radius,1,radius},
+        max_distance = 0,
+        debug        = false,
+    })
+
+    return hitList
+end

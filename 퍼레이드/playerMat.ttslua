@@ -1,0 +1,180 @@
+color_counts = {["노랑"] = 0, ["파랑"] = 0, ["빨강"] = 0, ["검정"] = 0, ["초록"] = 0, ["보라"] = 0}
+win_rec = {["노랑"] = false, ["파랑"] = false, ["빨강"] = false, ["검정"] = false, ["초록"] = false, ["보라"] = false}
+simColors = {"노랑", "파랑", "빨강", "검정", "초록", "보라"}
+color_Vec = {["노랑"] = vector(-2.25, 0, 0), ["파랑"] = vector(-1.5, 0, 0), ["빨강"] = vector(-0.75, 0, 0), ["검정"] = vector(0, 0, 0), ["초록"] = vector(0.75, 0, 0), ["보라"] = vector(1.5, 0, 0)}
+isOn = true
+startBtn = getObjectFromGUID('6cfc6e')
+
+function onCollisionEnter(collision_info)
+  -- collision_info table:
+  --   collision_object    Object
+  --   contact_points      Table     {Vector, ...}
+  --   relative_velocity   Vector
+      if collision_info.collision_object == nil
+      or collision_info.collision_object == self
+      or collision_info.collision_object.is_face_down == true
+      or (collision_info.collision_object.type ~= "Card" and collision_info.collision_object.type ~= "Deck")
+      then
+          --Filter the result to ensure we are colliding with a Pokemon Card.
+          return
+      end
+          getScore()
+
+end
+
+function getScore()
+  if isOn then
+      off()
+      cards = {}
+      decks = {}
+      color_counts = {["노랑"] = 0, ["파랑"] = 0, ["빨강"] = 0, ["검정"] = 0, ["초록"] = 0, ["보라"] = 0}
+      local hitList = getCards()
+
+      for i, obj in ipairs(hitList) do
+        local now = obj.hit_object
+        if now.tag== "Deck" and now.is_face_down == false then
+          local deck = now.getObjects()
+          for j, c in ipairs(deck) do
+            local card = now.takeObject({
+              position = {-10,0.5,-42 + j * -1}
+            })
+          end
+            --addUp(card)
+            table.insert(cards, #cards+1, card)
+
+        end
+      end
+
+      local hitList = getCards()
+      for i, obj in ipairs(hitList) do
+        local now = obj.hit_object
+        if now.tag== "Card" then
+          local cardPos = self.positionToWorld(color_Vec[now.getDescription()]+vector(0, 0.5 + 0.05 * i, -0.85+0.15*color_counts[now.getDescription()]))
+          now.setRotation(self.getRotation())
+          now.setPosition(cardPos)
+          --table.insert(cards, #cards+1, now)
+          addUp(now)
+        end
+      end
+      --for i, card in ipairs(cards) do
+          --addUp(card)
+      --end
+      --print(color_counts["노랑"])
+    Wait.frames(on, 50)
+  end
+end
+
+function addUp(card)
+  local color = card.getDescription()
+  --print(card.getDescription())
+  if color ~= nil then
+    color_counts[color] = color_counts[color] + 1
+  end
+end
+
+function on()
+  self.setVar("isOn", true)
+end
+
+function off()
+  self.setVar("isOn", false)
+end
+
+function getCards()
+  local scale = self.getScale()
+  local forward = self.getTransformForward()
+  local dir = math.abs(forward.z)
+  if dir > 0.8 and dir < 1.2 then
+      size = {
+        x = scale.x * 5.1,
+        y = scale.y * 5,
+        z = scale.z * 2.65,
+      }
+    else
+      size = {
+        x = scale.x * 2.65,
+        y = scale.y * 5,
+        z = scale.z * 5.1,
+      }
+  end
+  calls = Physics.cast({
+    origin       = self.getPosition(),
+    direction    = {0,1,0},
+    type         = 3,
+    size         = size,
+    orientation  = forward,
+    max_distance = 3,
+    debug        = false,
+  }) -- returns {{Vector point, Vector normal, float distance, Object hit_object}, ...}
+  return calls
+end
+
+function flipWon(wonColors)
+        -- 원래 있던 덱 재계산
+        local hitList = getCards()
+        for i, obj in ipairs(hitList) do
+          local now = obj.hit_object
+          if now.tag == "Deck" then
+            local before = now.getRotation()
+            now.setRotation({before.x, before.y, 0})
+          end
+        end
+
+    off()
+
+    color_counts = {["노랑"] = 0, ["파랑"] = 0, ["빨강"] = 0, ["검정"] = 0, ["초록"] = 0, ["보라"] = 0}
+    --getScore()
+    win_rec = {["노랑"] = false, ["파랑"] = false, ["빨강"] = false, ["검정"] = false, ["초록"] = false, ["보라"] = false}
+  for i, c in ipairs(wonColors) do
+    --print(c .. " : " .. tostring(self.getColorTint()))
+    win_rec[c] = true
+    local deck = {}
+    local hitList = getCards()
+    for i, obj in ipairs(hitList) do
+      local now = obj.hit_object
+      if now.tag == "Card" and now.getDescription() == c then
+        --now.flip()
+        table.insert(deck, #deck+1, now)
+        color_counts[c] = color_counts[c] + 1
+        --addUp(now)
+      end
+    end
+    if #deck == 1 then
+        local oneBefore = deck[1].getRotation()
+        deck[1].setRotation({oneBefore.x, oneBefore.y, 180})
+    end
+
+    local realDeck = group(deck)
+
+    --print(realDeck)
+    local hitList = getCards()
+    for i, obj in ipairs(hitList) do
+      local now = obj.hit_object
+      if now.tag == "Deck" then
+        local before = now.getRotation()
+        now.setRotation({before.x, before.y, 180})
+      end
+    end
+    --realDeck.flip()
+    --log(realDeck)
+    --realDeck.setPosition(deckPos)
+  end
+
+  -- 앞면 카드들 계산
+  for i, obj in ipairs(hitList) do
+    local now = obj.hit_object
+      if now.tag == "Card" and now.getDescription() ~= nil and now.is_face_down == false and win_rec[now.getDescription()] == false then
+      --print(c)
+      color_counts[now.getDescription()] = color_counts[now.getDescription()] + tonumber(now.getName())
+      end
+  end
+
+  totalScore = 0
+  for i, c in ipairs(simColors) do
+    totalScore = totalScore + color_counts[c]
+    --print(color_counts[c])
+    --print(c .. ": " .. color_counts[c] .. "점")
+  end
+Wait.frames(on, 100)
+return totalScore
+end

@@ -1,0 +1,94 @@
+function onLoad(save_state)
+
+  colorzones = {
+  ["Purple"] = getObjectFromGUID('8daf63'),
+  ["Brown"] = getObjectFromGUID('b2774c'),
+  ["Red"] = getObjectFromGUID('24693b'),
+  ["Orange"] = getObjectFromGUID('63bf2f'),
+  ["Green"] = getObjectFromGUID('e6d68d'),
+  ["Teal"] = getObjectFromGUID('c31c89'),
+  ["Blue"] = getObjectFromGUID('922aa9'),
+  ["Yellow"] = getObjectFromGUID('15c4bf'),
+  }
+
+  answerzone = getObjectFromGUID('cedde7')
+
+  scorezones = {
+  [1] = getObjectFromGUID('2eca82'),
+  [2] = getObjectFromGUID('402037'),
+  [3] = getObjectFromGUID('9396ae'),
+  [4] = getObjectFromGUID('e28a9e'),
+  [5] = getObjectFromGUID('63e04f'),
+  [6] = getObjectFromGUID('5696c2'),
+  [7] = getObjectFromGUID('0f701e'),
+  [8] = getObjectFromGUID('a4dce1'),
+  }
+
+  counters = {
+  ["Purple"] = getObjectFromGUID('2000e4'),
+  ["Brown"] = getObjectFromGUID('265eb4'),
+  ["Red"] = getObjectFromGUID('0cdb1a'),
+  ["Orange"] = getObjectFromGUID('647107'),
+  ["Green"] = getObjectFromGUID('7f1df9'),
+  ["Teal"] = getObjectFromGUID('bca252'),
+  ["Blue"] = getObjectFromGUID('0b7df9'),
+  ["Yellow"] = getObjectFromGUID('c6098d'),
+  }
+
+  cards = {}
+
+    votes = {
+      [1] = getObjectFromGUID('4feeb6'),
+      [2] = getObjectFromGUID('1850b1'),
+      [3] = getObjectFromGUID('fd770e'),
+      [4] = getObjectFromGUID('3d475c'),
+      [5] = getObjectFromGUID('1d3b1d'),
+      [6] = getObjectFromGUID('68bc90'),
+      [7] = getObjectFromGUID('d5df91'),
+      [8] = getObjectFromGUID('b8a9e9'),
+    }
+
+  color = self.getColorTint():toString()
+end
+
+  function grabAll()
+    grab()
+    total()
+  end
+
+  function grab()
+    for i = 1, 8 do
+      if votes[i].getZones()[2] ~= nil then
+      local objs = votes[i].getZones()[2].getObjects()
+      for k=1, #objs do
+        if objs[k].getGMNotes() ~= "무시" and objs[k].tag == "Card" then
+          card = objs[k]
+        if card ~= nil and card.getName() == votes[i].getGMNotes() then
+        self.Counter.setValue(self.Counter.getValue() + 1)
+  end
+  end
+  end
+  end
+  end
+  end
+
+  function total()
+      scoreupdate()
+    if card ~= nil and card.getGMNotes() ~= nil and card.getGMNotes() == color then
+    self.Counter.setValue(self.Counter.getValue() + scoreupdate())
+    end
+card = nil
+  end
+
+  function scoreupdate()
+      score = 0
+      local objs_in_zone = answerzone.getObjects()
+      for i = 1, #objs_in_zone do
+        if objs_in_zone[i].tag == "Card" and objs_in_zone[i].getGMNotes() == color then
+          card = objs_in_zone[i]
+        elseif card ~= nil and objs_in_zone[i].tag == "Chip" and objs_in_zone[i].getGMNotes() == card.getName() then
+          score = score + 1
+        end
+    end
+    return score
+end

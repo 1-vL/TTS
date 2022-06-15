@@ -1,0 +1,89 @@
+function onload()
+  penEffect = self.getGMNotes()
+  name = "[" .. string.sub(self.getName(), 1, string.find(self.getName(), "\n\n", 1)-1) .."]"
+  if penEffect == nil or penEffect == "" then
+    self.UI.setXmlTable({
+      {
+        tag="Panel",
+        attributes={ id="all" },
+        children={
+          {
+          tag="Panel",
+          attributes={ position="0 108 -100", height="36", width="180", color="rgba(0,0,0,0)",  padding="0 5 0 0", spacing="0", fontSize="0.01", alignment="UpperLeft", },
+          children={
+
+            {
+            tag="Button",
+            attributes={ id="descText", alignment="UpperLeft", resizeTextForBestFit="true", resizeTextMaxSize="0.01", position="0 105 0",  rotation="0 0 180",  horizontalOverflow="Wrap", width="140", color="clear", onClick="desc", },
+            value=tostring(self.getDescription()),
+          }
+        },
+      },
+      },
+    }
+    })
+  else
+    self.UI.setXmlTable({
+      {
+        tag="Panel",
+        attributes={ id="all" },
+        children={
+          {
+          tag="Panel",
+          attributes={ position="0 108 -100", height="36", width="180", color="rgba(0,0,0,0)",  padding="0 5 0 0",  spacing="0", },
+          children={
+
+            {
+            tag="Button",
+            attributes={ id="descText", alignment="UpperLeft", resizeTextForBestFit="true", resizeTextMaxSize="0.01", position="0 105 0",  rotation="0 0 180",  horizontalOverflow="Wrap", width="140", color="clear", onClick="desc", },
+            value=tostring(self.getDescription()),
+          }
+        },
+      },
+
+      {
+          tag="Panel",
+          attributes={ position="0 60 -100", height="30", width="180", color="rgba(0,0,0,0)", padding="20 20 0 0",  spacing="0", },
+          children={
+                {
+                  tag = "Button",
+                  attributes={ id="penText", alignment="UpperLeft", resizeTextForBestFit="true", resizeTextMaxSize="0.01", position="0 105 0",  rotation="0 0 180",  horizontalOverflow="Wrap",  color="clear", onClick="penDesc", },
+                  value=tostring(penEffect),
+                },
+        },
+      },
+      },
+      }
+    })
+  end
+end
+
+
+function onObjectEnterZone(zone, enter_object)
+  if zone.tag == "Hand" and enter_object == self then
+    self.UI.setAttribute("all", "visibility", zone.getValue())
+  end
+end
+
+function onObjectLeaveZone(zone, leave_object)
+  if zone.tag == "Hand" and leave_object == self then
+    self.UI.setAttribute("all", "visibility", "White|Brown|Red|Orange|Yellow|Green|Teal|Blue|Purple|Pink|Grey|Black")
+  end
+end
+
+
+function penDesc(player, click, value)
+  if click == "-1" then
+    printToAll("Pendulum Effect of " .. name .. ": ".. penEffect)
+  else
+    print("Just to me: Pendulum Effect of " .. name .. ": ".. penEffect)
+  end
+end
+
+function desc(player, click, value)
+  if click == "-1" then
+    printToAll("Effect of " .. name .. ": ".. self.getDescription())
+  else
+    print("Just to me: Effect of " .. name .. ": ".. self.getDescription())
+  end
+end

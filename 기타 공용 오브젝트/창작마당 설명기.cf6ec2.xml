@@ -1,0 +1,56 @@
+<Defaults>
+  <Text
+    fontSize="100"
+    color="White"
+    width="2200"
+    height="100000"
+    ></Text>
+      <Panel
+        width="2500"
+        color="Black">
+      </Panel>
+</Defaults>
+
+<Panel
+    class="titlePanel"
+    id="titlePanel"
+    position="0 2700 -20"
+    height="250"
+    padding="50 50 0 0">
+    <Text id="titleText" class="showHideText">한글 창작마당 선택기 카드정보</Text>
+  </Panel>
+
+  <Panel
+      class="infoPanel"
+      id="infoPanel"
+      position="0 2500 -20"
+      height="300"
+      padding="50 50 0 0">
+      <Text id="infoText" class="showHideText" fontSize="40">태그정보 - 카드 설명란에서도 확인하실 수 있습니다.</Text>
+    </Panel>
+
+  <Panel
+      class="contentPanel"
+      id="contentPanel"
+      position="0 1300 -20"
+      height="2000"
+      padding="50 150 150 0">
+
+    <VerticalScrollView flexibleHeight="1" scrollSensitivity="100" width="2500" color="clear">
+              <Text id="contentText" class="showHideText" alignment="UpperLeft" fontSize="60" verticalOverflow="Overflow">
+                아래 하얀색 패널 위에 한글 창작마당 선택기에서 생성된 카드를 올려두시면 창작마당에 있는 설명 문구를 불러옵니다.</Text>
+  </VerticalScrollView>
+
+    </Panel>
+
+
+      <Panel
+          class="hideOptionPanel"
+          id="hideOptionPanel"
+          width="40"
+          height="40"
+          position="160 160 -20"
+          color="clear"
+          padding="0 0 0 0">
+          <Toggle id="hideOption" class="hideOption" onValueChanged="hideOption" isOn="true" tooltip="설명기에서 카드가 떨어져도 설명창을 유지합니다."></Toggle>
+        </Panel>

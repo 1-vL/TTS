@@ -1,0 +1,229 @@
+thisNum = tonumber(self.getGMNotes())
+card = nil
+card_Colors = {["노랑"] = "Yellow", ["파랑"] = "Blue", ["빨강"] = "Red", ["검정"] = "Black", ["초록"] = "Green", ["보라"] = "Purple"}
+simColors = {"노랑", "파랑", "빨강", "검정", "초록", "보라"}
+SixSymbolColor = {White = '[FFFFFF]', Brown = '[703A16]', Red = '[DA1917]', Orange = '[F3631C]',
+    Yellow = '[E6E42B]', Green = '[30B22A]', Teal = '[20B09A]', Blue = '[1E87FF]',
+    Purple = '[9F1FEF]', Pink = '[F46FCD]', Black = '[000000]'}
+color_Vec = {["노랑"] = vector(-2.25, 0, 0), ["파랑"] = vector(-1.5, 0, 0), ["빨강"] = vector(-0.75, 0, 0), ["검정"] = vector(0, 0, 0), ["초록"] = vector(0.75, 0, 0), ["보라"] = vector(1.5, 0, 0)}
+spaces = {getObjectFromGUID('e46948'), getObjectFromGUID('e184bc'), getObjectFromGUID('db1764'), getObjectFromGUID('53f9fd'), getObjectFromGUID('c7b74c'), getObjectFromGUID('8c2d8c'), getObjectFromGUID('4e11b2'), getObjectFromGUID('11e8ca'), getObjectFromGUID('77e410'), getObjectFromGUID('eab3a7'), getObjectFromGUID('0b2097'), getObjectFromGUID('9dc50e'), getObjectFromGUID('1a92c2'), getObjectFromGUID('46e84d'), getObjectFromGUID('40f8c2'), getObjectFromGUID('86645c'), getObjectFromGUID('4da1a7'), getObjectFromGUID('54add9'), getObjectFromGUID('9f527d'), getObjectFromGUID('dad0d1')}
+playerArea = {["Blue"] = getObjectFromGUID('1f223b'), ["Teal"] = getObjectFromGUID('3fee9c'), ["Green"] = getObjectFromGUID('60b45a'), ["Orange"] = getObjectFromGUID('d5e44a'),
+    ["Red"] = getObjectFromGUID('1f5352'), ["Brown"] = getObjectFromGUID('d362d6'), ["Purple"] = getObjectFromGUID('65d6f1'), ["Yellow"] = getObjectFromGUID('c10f83')}
+isOn = true
+startBtn = getObjectFromGUID('6cfc6e')
+  self.interactable = false
+oddNum = 0
+
+pColor = nil
+--table.remove(spaces, int)
+
+  while #spaces >= thisNum do
+    table.remove(spaces, thisNum)
+  end
+
+  if thisNum == 1 then
+    spaces = {}
+  end
+
+function null()
+end
+
+function onLoad(save_state)
+  self.setScale({0.15,0.01,0.15})
+  self.setInvisibleTo(Player.getColors())
+self.UI.setXmlTable({
+    {
+        tag="Panel",
+        attributes={
+            position="0 -1400 0",
+            rotation="180 180 0",
+            height=500000000,
+            width=1000000000,
+            color="rgba(0,0,0,0)",
+        },
+        children={
+            {
+                tag="Text",
+                attributes={
+                    fontSize=300000000,
+                    color="White",
+                },
+                value=tostring(thisNum),
+            },
+        }
+    }
+})
+end
+
+function onCollisionEnter(collision_info)
+  oddNum = oddNum + 1
+    if collision_info.collision_object == nil
+    or collision_info.collision_object == self
+    or collision_info.collision_object.type ~= "Card"
+    or collision_info.collision_object.is_face_down == true
+    or collision_info.collision_object.hasTag("Parade") ~= true
+    or collision_info.collision_object.getVar("pColor") ~= Turns.turn_color
+    or oddNum % 2 == 1
+    then
+        --Filter the result to ensure we are colliding with a Pokemon Card.
+        return
+    end
+  -- collision_info table:
+  --   collision_object    Object
+  --   contact_points      Table     {Vector, ...}
+  --   relative_velocity   Vector
+    --print(before_sapces)
+    --startBtn.setVar("oddNum", startBtn.getVar("oddNum") + 0.5)
+    card = collision_info.collision_object
+    cardNum = tonumber(card.getName())
+    cardCol = card_Colors[card.getDescription()]
+    card.setRotation(self.getRotation())
+    pColor = collision_info.collision_object.getVar("pColor")
+
+    line = {}
+    local hitList = getCard()
+
+    for i, obj in ipairs(hitList) do
+      local now = obj.hit_object
+      if now.tag== "Card" then
+        table.insert(line, #line+1, now)
+      end
+    end
+
+    if isOn then
+      off()
+      Wait.frames(takeCard,30)
+      --takeCard()
+      --fillSlot()
+    end
+
+  --print(cardNum)
+  --print(cardCol)
+  --print(thisNum)
+end
+
+function onCollisionExit(collision_info)
+  Wait.frames(function() card = nil end,30)
+end
+
+function hide()
+  if spaces[thisNum-1].getVar("card") == nil then
+  self.setVar("isOn", false)
+  self.setInvisibleTo(Player.getColors())
+  end
+end
+
+function show()
+  if spaces[thisNum-1].getVar("card") ~= nil then
+  self.setInvisibleTo({})
+  self.setVar("isOn", true)
+  end
+end
+
+function on()
+-- 다음 턴으로 넘김
+for i, space in ipairs(spaces) do
+  space.setVar("isOn", true)
+end
+end
+
+function off()
+for i, space in ipairs(spaces) do
+  space.setVar("isOn", false)
+end
+end
+
+function sleep(sec)
+    local fin = os.clock() + sec
+    while fin > os.clock() do
+        coroutine.yield(0)
+    end
+end
+
+function takeCard()
+  --조건에 맞는 카드 가져오기
+  local nowColor = pColor
+  if nowColor ~= nil then
+  local mat = playerArea[nowColor]
+  local matPos = mat.getPosition()
+  local matRot = mat.getRotation()
+  local matDir = mat.getTransformForward()
+  local message = SixSymbolColor[tostring(nowColor)] .. Player[nowColor].steam_name .. "[FFFFFF]님이 " .. SixSymbolColor[card_Colors[card.getDescription()]] .. card.getDescription() .. " " .. cardNum .. "[FFFFFF] 카드를 내서"
+  local cardMsg = ""
+  --print(matDir)
+  for i, lCard in ipairs(line) do
+    if i < #line-cardNum then -- 방금낸 카드 숫자만큼 무시
+      local lCol = lCard.getDescription()
+      if tonumber(lCard.getName()) <= cardNum or card_Colors[lCol] == cardCol then
+        --print(lCard.getName() .. "뽑힐 카드")
+        local cardPos = mat.positionToWorld(color_Vec[lCol]+vector(0, 2, -0.85))
+        lCard.setLock(false)
+        lCard.setPositionSmooth(cardPos, false, true)
+        lCard.setRotationSmooth(matRot, false, true)
+        spaces[i].setVar("card", nil)
+        cardMsg = cardMsg .. " " .. SixSymbolColor[card_Colors[lCol]] .. lCol .. " " .. lCard.getName() .. ","
+      end
+    end
+  end
+  --print(startBtn.getVar("oddNum") % 2)
+  if cardMsg ~= "" then
+    message = message .. string.sub(cardMsg, 0, string.len(cardMsg)-1) .. "[FFFFFF] 카드를 가져갑니다."
+  else
+    message = message .. " 카드를 가져가지 않습니다."
+  end
+  printToAll(message)
+  --fillSlot()
+  Wait.frames(fillSlot,30)
+  --fillSlot()
+
+  --print(#line .. "장")
+  end
+end
+
+function fillSlot()
+  --뺀 자리 채우기
+  temp = {}
+  local hitList = getCard()
+
+  for i, obj in ipairs(hitList) do
+    local now = obj.hit_object
+    if now.tag== "Card" then
+      table.insert(temp, #temp+1, now)
+      now.setLock(true)
+    end
+  end
+  --print(#temp .. " 임시")
+  for i, t in ipairs(temp) do
+    if i < thisNum then
+    local basePos = spaces[i].getPosition()+vector(0, 0.1, 0)
+    if t ~= nil then
+      t.setLock(false)
+      t.setPosition(basePos)
+      t.setRotation({0.00, 90.00, 0.00})
+      t.setLock(true)
+    end
+  end
+  end
+  --card.setPosition(spaces[lastSpot+1].getPosition()+vector(0, 1, 0))
+
+  --startLuaCoroutine(self, "turn")
+  getObjectFromGUID('a769df').call("dealOne", pColor)
+  getObjectFromGUID('a769df').setVar("currentTurn", getObjectFromGUID('a769df').getVar("currentTurn")+1)
+
+  Turns.turn_color = Turns.getNextTurnColor()
+  Wait.frames(on, 60)
+  --on()
+end
+
+function getCard()
+  calls = Physics.cast({
+    origin       = getObjectFromGUID('e46948').getPosition() + vector(0, 0.1, 0),
+    direction    = {0,0,1},
+    type         = 3,
+    size         = {3,0.5,2},
+    orientation  = {0,0,-1},
+    max_distance = self.getPosition()[3] - getObjectFromGUID('e46948').getPosition()[3],
+    debug        = false,
+  }) -- returns {{Vector point, Vector normal, float distance, Object hit_object}, ...}
+  return calls
+end
