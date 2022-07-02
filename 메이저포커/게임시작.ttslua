@@ -139,28 +139,49 @@ function calc()
     end
   end
   -- 기록 완료
-
+  local result = ""
+  local resultScore = 0
   --팔레트
   if palette()[1] then
-    return {"팔레트", palette()[2]}
+    -- return {"팔레트", palette()[2]}
+    if palette()[2] > resultScore then
+      result="팔레트"
+      resultScore = palette()[2]
+    end
   end
 
   --쿼드라
 
   if quadra()[1] then
-    return {"쿼드라", quadra()[2]*15}
+    -- return {"쿼드라", quadra()[2]*15}
+    if quadra()[2]*15 > resultScore then
+      result="쿼드라"
+      resultScore = quadra()[2]*15
+    end
   end
   -- color
   for i, colNum in pairs(sameCol) do
     if colNum == 5 and straight()[1] then
       colDuple = true
-      return {"스티플", straight()[2]*20}
+      -- return {"스티플", straight()[2]*20}
+      if straight()[2]*20 > resultScore then
+        result="스티플"
+        resultScore = straight()[2]*20
+      end
     elseif colNum == 5 and isMajor then
       colDuple = true
-      return {"메이저 플러쉬", straight()[2]*12}
+      -- return {"메이저 플러쉬", straight()[2]*12}
+      if straight()[2]*12 > resultScore then
+        result="메이저 플러쉬"
+        resultScore = straight()[2]*12
+      end
     elseif colNum == 5 then
       colDuple = true
-      return {"플러쉬", straight()[2]*8}
+      -- return {"플러쉬", straight()[2]*8}
+      if straight()[2]*8 > resultScore then
+        result="플러쉬"
+        resultScore = straight()[2]*8
+      end
     elseif colNum >= 2 then
       -- 다른 색깔 섞임
       -- print("같은 색 존재")
@@ -174,37 +195,78 @@ function calc()
   -- 스트레이트
   -- printToAll(isMajor)
   if straight()[1] and colDuple == true and isMajor == true then
-    return {"메이저 스트레이트", straight()[2]*7}
+    -- return {"메이저 스트레이트", straight()[2]*7}
+    if straight()[2]*7 > resultScore then
+      result="메이저 스트레이트"
+      resultScore = straight()[2]*7
+    end
   elseif straight()[1] and colDuple == true then
-      return {"스트레이트", straight()[2]*5}
+      -- return {"스트레이트", straight()[2]*5}
+      if straight()[2]*5 > resultScore then
+        result="스트레이트"
+        resultScore = straight()[2]*5
+      end
   elseif straight()[1] and colDuple == false then
-    return {"콰트레이트", straight()[2]*15}
+    -- return {"콰트레이트", straight()[2]*15}
+    if straight()[2]*15 > resultScore then
+      result="콰트레이트"
+      resultScore = straight()[2]*15
+    end
   end
   --풀하우스
   if fullHouse()[1] and colDuple == false then
-    return {"콰트로우스", fullHouse()[2] + triple()[3] * 2}
+    -- return {"콰트로우스", fullHouse()[2] + triple()[3] * 2}
+    if fullHouse()[2] + triple()[3] * 2 > resultScore then
+      result="콰트로우스"
+      resultScore = fullHouse()[2] + triple()[3] * 2
+    end
   elseif fullHouse()[1] then
-    return {"풀하우스", fullHouse()[2]}
+    -- return {"풀하우스", fullHouse()[2]}
+    if fullHouse()[2] > resultScore then
+      result="풀하우스"
+      resultScore = fullHouse()[2]
+    end
   end
   --트리플
   if triple()[1] then
-    return {"트리플", triple()[2]}
+    -- return {"트리플", triple()[2]}
+    if triple()[2] > resultScore then
+      result="트리플"
+      resultScore = triple()[2]
+    end
   end
   --페어
   if pair()[1] then
-      return {"페어", pair()[2]}
+      -- return {"페어", pair()[2]}
+      if pair()[2] > resultScore then
+        result="페어"
+        resultScore = pair()[2]
+      end
   end
 
   if colDuple == false then
-    return {"콰트로", getPlainSum() + highMajorNum * 2}
+    -- return {"콰트로", getPlainSum() + highMajorNum * 2}
+    if getPlainSum() + highMajorNum * 2 > resultScore then
+      result="콰트로"
+      resultScore = getPlainSum() + highMajorNum * 2
+    end
   end
 
   --하이메이저
   if isMajor == true then
-    return {"하이메이저", highMajorNum}
+    -- return {"하이메이저", highMajorNum}
+    if highMajorNum > resultScore then
+      result="하이메이저"
+      resultScore = highMajorNum
+    end
   end
   --아무것도 없음
-    return {"족보 없음으", 0}
+  -- return {"족보 없음으", 0}
+  if resultScore == 0 then
+    result="족보 없음으"
+    resultScore = 0
+  end
+  return {result, resultScore}
 end -- calc end
 
 function getPlainSum()
