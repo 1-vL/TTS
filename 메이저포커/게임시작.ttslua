@@ -194,7 +194,7 @@ function calc()
 
   -- 스트레이트
   -- printToAll(isMajor)
-  if straight()[1] and colDuple == true and isMajor == true then
+  if straight()[1] and colDuple == true and highMajorNum == getHighNum() then
     -- return {"메이저 스트레이트", straight()[2]*7}
     if straight()[2]*7 > resultScore then
       result="메이저 스트레이트"
@@ -255,7 +255,7 @@ function calc()
   --하이메이저
   if isMajor == true then
     -- return {"하이메이저", highMajorNum}
-    if highMajorNum > resultScore then
+    if highMajorNum > resultScore and highMajorNum ~= 9 then
       result="하이메이저"
       resultScore = highMajorNum
     end
@@ -338,18 +338,22 @@ function pair()
     if sameNum[i] == 2 then
       isPair = true
       pairNum = i
-      sum = i * 2
+        if pairNum * 2 > sum then
+          sum = i * 2
+        end
+      -- print(isMajor)
+        if isMajor then
+          for i = 1, 5 do
+              if myCardVals[i] == pairNum and myCardColors[i] == majorColor then
+                if pairNum * 3 > sum then
+                  sum = pairNum * 3
+                  isPairMajor = true
+                end
+            end
+          end
+        end
     end
   end
-  -- print(isMajor)
-    if isMajor then
-      for i = 1, 5 do
-          if myCardVals[i] == pairNum and myCardColors[i] == majorColor then
-          sum = pairNum * 3
-          isPairMajor = true
-        end
-      end
-    end
   return {isPair, sum}
 end
 
