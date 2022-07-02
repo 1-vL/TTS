@@ -49,18 +49,66 @@ function onload()
 
 end
 
+function setup()
+  for i, card in ipairs(delList) do
+    -- print(card)
+    if card ~= nil then
+      card.destruct()
+    end
+  end
+  delList = {}
+
+  sleep(1)
+  cards = getCards()
+  sleep(2)
+  deck = getDeck()
+  deck.shuffle()
+  sleep(0.2)
+  deck.deal(5)
+
+  for _, c in ipairs(majors) do
+    -- print(discarded[c])
+    deck.takeObject({
+      position          = c.getPosition() + vector(0, 1, 0),
+      rotation          = c.getRotation() + vector(0, 90, 0)
+    })
+  end
+  local common = deck.takeObject({
+    position          = getObjectFromGUID('efc9f1').getPosition() + vector(0, 1, 0),
+    rotation          = getObjectFromGUID('efc9f1').getRotation() + vector(0, 270, 0)
+  })
+
+  local copyList = {}
+  table.insert(copyList, #copyList+1, common)
+    for i, color in ipairs(getSeatedPlayers()) do
+      copy(copyList)
+      local temp = paste({
+          position          = discarded[color].getPosition() + vector(0, 0, 0),
+          rotation          = discarded[color].getRotation()
+      })[1]
+      temp.setGMNotes('복사본')
+      -- temp.flip()
+      temp.setRotation(discarded[color].getRotation() + vector(0, 270, 0))
+      temp.setPosition(discarded[color].getPosition() + vector(0, 0.1, 0))
+      temp.setLock(true)
+      table.insert(delList, #delList+1, temp)
+    end
+  setNotes("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n제작 by Baek_UP\n스크립트 by 3JA2")
+  return 1
+end
+
 function score(obj, color, click)
   for i, pp in ipairs(getSeatedPlayers()) do
-  myCardColors = {}
-  myCardVals = {}
-  getMyCards(obj, pp)
-    if click then
-      counters[pp].call("setNumTo", counters[pp].getVar("val") - calc()[2])
-      printToAll(SixSymbolColor[pp] .. Player[pp].steam_name .. '[FFFFFF]님이 ' .. calc()[1] .. '로 얻은 ' .. calc()[2] .. '점을 취소합니다.')
-    else
-      counters[pp].call("setNumTo", counters[pp].getVar("val") + calc()[2])
-      printToAll(SixSymbolColor[pp] .. Player[pp].steam_name .. '[FFFFFF]님이 ' .. calc()[1] .. '로 ' .. calc()[2] .. '점을 얻었습니다.')
-    end
+    myCardColors = {}
+    myCardVals = {}
+    getMyCards(obj, pp)
+      if click then
+        counters[pp].call("setNumTo", counters[pp].getVar("val") - calc()[2])
+        printToAll(SixSymbolColor[pp] .. Player[pp].steam_name .. '[FFFFFF]님이 ' .. calc()[1] .. '로 얻은 ' .. calc()[2] .. '점을 취소합니다.')
+      else
+        counters[pp].call("setNumTo", counters[pp].getVar("val") + calc()[2])
+        printToAll(SixSymbolColor[pp] .. Player[pp].steam_name .. '[FFFFFF]님이 ' .. calc()[1] .. '로 ' .. calc()[2] .. '점을 얻었습니다.')
+      end
   end
 end
 
@@ -113,13 +161,13 @@ function calc()
     elseif colNum == 5 then
       colDuple = true
       return {"플러쉬", straight()[2]*8}
-      -- 다른 색깔 섞임
     elseif colNum >= 2 then
+      -- 다른 색깔 섞임
       -- print("같은 색 존재")
       colDuple = true
     else
-    --콰트로
-      -- 모두 다른 색
+      --콰트로
+      --모두 다른 색
     end
   end
 
@@ -138,13 +186,13 @@ function calc()
   elseif fullHouse()[1] then
     return {"풀하우스", fullHouse()[2]}
   end
-  --페어
-  if pair()[1] then
-      return {"페어", pair()[2]}
-  end
   --트리플
   if triple()[1] then
     return {"트리플", triple()[2]}
+  end
+  --페어
+  if pair()[1] then
+      return {"페어", pair()[2]}
   end
 
   if colDuple == false then
@@ -159,6 +207,36 @@ function calc()
     return {"족보 없음으", 0}
 end -- calc end
 
+function getPlainSum()
+  local sum = 0
+  for i = 1, 5 do
+    if myCardVals[i] ~= 9 then
+      sum = sum + myCardVals[i]
+    end
+  end
+  return sum
+end
+
+function checkMajor()
+  for i = 1, 5 do
+    if majorColor == myCardColors[i] then
+      isMajor = true
+    end
+  end
+end
+
+function getHighNum()
+  local highNum = 0
+  for i=1, 5 do
+    if myCardVals[i] > highNum then
+      highNum = myCardVals[i]
+    end
+  end
+  return highNum
+end
+
+
+  -- 개별 족보 함수
 function quadra()
   local majorNum = 0
   for i=1, 8 do
@@ -189,16 +267,6 @@ function fullHouse()
     return {isFullHouse, sum}
   end
   return {isFullHouse, sum}
-end
-
-function getPlainSum()
-  local sum = 0
-  for i = 1, 5 do
-    if myCardVals[i] ~= 9 then
-      sum = sum + myCardVals[i]
-    end
-  end
-  return sum
 end
 
 function pair()
@@ -247,14 +315,6 @@ function triple()
     return {isTriple, sum, netSum}
 end
 
-function checkMajor()
-  for i = 1, 5 do
-    if majorColor == myCardColors[i] then
-      isMajor = true
-    end
-  end
-end
-
 function palette()
   if sameNum[9] == 5 then
     return {true, 150}
@@ -286,16 +346,6 @@ function straight()
   else
     return {false, midNum}
   end
-end
-
-function getHighNum()
-  local highNum = 0
-  for i=1, 5 do
-    if myCardVals[i] > highNum then
-      highNum = myCardVals[i]
-    end
-  end
-  return highNum
 end
 
 function getMyCards(obj, color)
@@ -379,55 +429,6 @@ function FirstPlayer()
     Turns.turn_color = pl
 
   end
-
-function setup()
-
-  for i, card in ipairs(delList) do
-    -- print(card)
-    if card ~= nil then
-      card.destruct()
-    end
-  end
-  delList = {}
-
-  sleep(1)
-  cards = getCards()
-  sleep(2)
-  deck = getDeck()
-  deck.shuffle()
-  sleep(0.2)
-  deck.deal(5)
-
-  for _, c in ipairs(majors) do
-    -- print(discarded[c])
-    deck.takeObject({
-      position          = c.getPosition() + vector(0, 1, 0),
-      rotation          = c.getRotation() + vector(0, 90, 0)
-    })
-  end
-  local common = deck.takeObject({
-    position          = getObjectFromGUID('efc9f1').getPosition() + vector(0, 1, 0),
-    rotation          = getObjectFromGUID('efc9f1').getRotation() + vector(0, 270, 0)
-  })
-
-  local copyList = {}
-  table.insert(copyList, #copyList+1, common)
-  for i, color in ipairs(getSeatedPlayers()) do
-    copy(copyList)
-    local temp = paste({
-        position          = discarded[color].getPosition() + vector(0, 0, 0),
-        rotation          = discarded[color].getRotation()
-    })[1]
-    temp.setGMNotes('복사본')
-    -- temp.flip()
-    temp.setRotation(discarded[color].getRotation() + vector(0, 270, 0))
-    temp.setPosition(discarded[color].getPosition() + vector(0, 0.1, 0))
-    temp.setLock(true)
-    table.insert(delList, #delList+1, temp)
-  end
-  setNotes("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n제작 by Baek_UP\n스크립트 by 3JA2")
-  return 1
-end
 
 function getCards()
     local cards = {}
