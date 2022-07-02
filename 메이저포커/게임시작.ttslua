@@ -128,6 +128,10 @@ function calc()
   isPairMajor = false
 
   checkMajor()
+  if #myCardColors ~= 5 then
+    printToAll("모든 플레이어가 족보를 완성한 다음 점수계산 버튼을 눌러주세요!")
+    return {"에러",0}
+  end
   for i=1, 5 do
     -- print(sameFull[myCardColors[i]][myCardVals[i]])
     -- broadcastToAll(myCardVals[i])
@@ -246,9 +250,9 @@ function calc()
 
   if colDuple == false then
     -- return {"콰트로", getPlainSum() + highMajorNum * 2}
-    if getPlainSum() + highMajorNum * 2 > resultScore then
+    if getPlainSum() > resultScore then
       result="콰트로"
-      resultScore = getPlainSum() + highMajorNum * 2
+      resultScore = getPlainSum()
     end
   end
 
