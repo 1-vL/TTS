@@ -1,0 +1,482 @@
+loading = true
+assets = {}
+players = {
+    total = 0,
+    waiting = 0,
+    ready = 0
+}
+readyText = false
+waitingText = true
+currentPlayers = {}
+playerList = {
+    white = false,
+    brown = false,
+    red = false,
+    orange = false,
+    yellow = false,
+    green = false,
+    teal = false,
+    blue = false,
+    purple = false,
+    pink = false,
+}
+autoCount = false
+
+eCounters = {["Teal"] = getObjectFromGUID('4f51d5'), ["Blue"] = getObjectFromGUID('8aa166'), ["Purple"] = getObjectFromGUID('86b14c'), ["White"] = getObjectFromGUID('2110eb'), ["Red"] = getObjectFromGUID('329a85'), ["Orange"] = getObjectFromGUID('e9849b'), ["Yellow"] = getObjectFromGUID('f40643'), ["Green"] = getObjectFromGUID('80d58d')}
+
+cCounters = {["Teal"] = getObjectFromGUID('2d9245'), ["Blue"] = getObjectFromGUID('085066'), ["Purple"] = getObjectFromGUID('f9bf0c'), ["White"] = getObjectFromGUID('1b6ae4'), ["Red"] = getObjectFromGUID('8d7ebd'), ["Orange"] = getObjectFromGUID('b89397'), ["Yellow"] = getObjectFromGUID('4a7595'), ["Green"] = getObjectFromGUID('6e09b2')}
+
+exCounters = {["Teal"] = getObjectFromGUID('5db463'), ["Blue"] = getObjectFromGUID('1f26fc'), ["Purple"] = getObjectFromGUID('3508ba'), ["White"] = getObjectFromGUID('c61c71'), ["Red"] = getObjectFromGUID('e2b189'), ["Orange"] = getObjectFromGUID('716389'), ["Yellow"] = getObjectFromGUID('3e89fb'), ["Green"] = getObjectFromGUID('4c58b9')}
+
+offset = -3
+
+
+function onLoad()
+
+    self.createButton({ click_function = 'toggleZone',
+                        label = '비밀공유',
+                        function_owner = self,
+                        position = {0, 0.3, 0},
+                        rotation = {0, 0, 0},
+                        width = 1400,
+                        height = 500,
+                        font_size = 200})
+
+    self.createButton({ click_function = 'newGame',
+                        label = '새 게임',
+                        function_owner = self,
+                        position = {-1.25, 0.3, 1.5},
+                        rotation = {0, 0, 0},
+                        width = 1000,
+                        height = 500,
+                        font_size = 200})
+
+    self.createButton({ click_function = 'dist',
+                        label = '카드 분배',
+                        function_owner = self,
+                        position = {1.25, 0.3, 1.5},
+                        rotation = {0, 0, 0},
+                        width = 1000,
+                        height = 500,
+                        font_size = 200})
+
+    self.createButton({ click_function = 'toggleUI',
+                        label = 'UI 보기/감추기',
+                        function_owner = self,
+                        position = {0, 0.3, 3},
+                        rotation = {0, 0, 0},
+                        width = 1400,
+                        height = 500,
+                        font_size = 200})
+
+    self.createButton({ click_function = 'toggleAutoCount',
+                        label = '자동 입력 Off',
+                        function_owner = self,
+                        position = {0, 0.3, 4.5},
+                        rotation = {0, 0, 0},
+                        width = 1400,
+                        height = 500,
+                        font_size = 200})
+
+    currentPlayers = Player.getPlayers()
+
+    playerTable = Global.UI.getCustomAssets()
+    for _, playerReference in ipairs(currentPlayers) do
+        table.insert(playerTable,{
+            name = string.lower(playerReference.color).."PlayerImage",
+            url = "http://cloud-3.steamusercontent.com/ugc/1854925792342110286/7DBAC3171D07DCEA66DAA0CEF7185A0962AB46B2/"
+        })
+    end
+    Global.UI.setCustomAssets(playerTable)
+
+    xmlCode = [[<Panel
+        id="readyUI"
+        height="230"
+        width="260"
+        color="#000000F0"
+        allowDragging="true"
+        active="true"
+        rectAlignment="MiddleRight"
+        returnToOriginalPositionWhenReleased="false">
+        <VerticalLayout spacing="10">
+            <Text id="readyTitle" fontStyle="Bold" fontSize="30" text=" 준비완료" color="#828282" active="false"></Text>]]
+    for color,_ in pairs(playerList) do
+        xmlCode = xmlCode..[[
+            <HorizontalLayout id="]]..color..[[PlayerReady" active="false">
+                <Panel width="250">
+                    <Text id="]]..color..[[NameReady" alignment="MiddleCenter" fontSize="16" color="]]..color..[[" text=""></Text>
+                </Panel>
+            </HorizontalLayout>]]
+    end
+
+    xmlCode = xmlCode..[[
+            <Text id="waitingTitle" fontStyle="Bold" fontSize="30" text="대기중" color="#828282"></Text>]]
+
+    for color,_ in pairs(playerList) do
+        xmlCode = xmlCode..[[
+            <HorizontalLayout id="]]..color..[[PlayerWaiting" active="false">
+                <Panel width="250">
+                    <Text id="]]..color..[[NameWaiting" alignment="MiddleCenter" fontSize="16" color="]]..color..[[" text=""></Text>
+                </Panel>
+            </HorizontalLayout>]]
+    end
+
+    for _, color in pairs(Color.list) do
+        if not(color == 'Grey' or color == 'Black') then
+            xmlCode = xmlCode..[[
+                <Button id="]]..string.lower(color)..[[ReadyButton" visibility="]]..string.lower(color)..[[" onClick="6cfc6e/ready]]..color..[[()"><Text>준비 되셨나요?</Text></Button>
+                <Button id="]]..string.lower(color)..[[NotReadyButton" active="false" visibility="]]..string.lower(color)..[[" onClick="6cfc6e/notReady]]..color..[[()"><Text>레디 취소!</Text></Button>]]
+        end
+    end
+
+    xmlCode = xmlCode..[[<Button id="nextRoundButton" color="green" active="false" onClick="6cfc6e/nextRoundButton()"><Text>다음 라운드</Text></Button>
+        </VerticalLayout>
+    </Panel>]]
+
+    Wait.time(function()
+        Global.UI.setXml(Global.UI.getXml() .. xmlCode)
+    end, 1)
+    Wait.time(function() initializeList() end, 1.1,2)
+end
+
+function initializeList()
+    players.total = #currentPlayers
+    players.waiting = #currentPlayers
+
+    for _, playerReference in ipairs(currentPlayers) do
+        color = string.lower(playerReference.color)
+        playerList[color] = true
+        Global.UI.setAttribute(color..'PlayerWaiting', "active", "true")
+        Global.UI.setAttribute(color..'NameWaiting', 'text', playerReference.steam_name)
+        Global.UI.setAttribute(color..'NameReady', 'text', playerReference.steam_name)
+    end
+
+    checkTitle()
+end
+
+function onPlayerChangeColor(newCol)
+    if not(newCol == 'Grey' or newCol == 'Black') then
+        newColor = string.lower(newCol)
+        newPlayerList = Player.getPlayers()
+
+        for oldColor,v in pairs(playerList) do
+            found = false
+            if v then
+                for _, playerReference in ipairs(newPlayerList) do
+                    if oldColor == string.lower(playerReference.color) then
+                        found = true
+                    end
+                end
+
+                if not(found) then
+                    oldPlayerTable = Global.UI.getCustomAssets()
+                    newPlayerTable = {}
+                    for _, imageTable in ipairs(oldPlayerTable) do
+
+                        if imageTable.name == oldColor.."PlayerImage" then
+                            table.insert(newPlayerTable,{
+                                name = newColor.."PlayerImage",
+                                url = "http://cloud-3.steamusercontent.com/ugc/1854925792342110286/7DBAC3171D07DCEA66DAA0CEF7185A0962AB46B2/"
+                            })
+                        else
+                            table.insert(newPlayerTable,imageTable)
+                        end
+                    end
+                    Global.UI.setCustomAssets(newPlayerTable)
+
+                    Wait.time(function()
+                        Global.UI.setAttribute(newColor..'PlayerWaiting', "active", Global.UI.getAttribute(oldColor..'PlayerWaiting', 'active'))
+                        Global.UI.setAttribute(newColor..'PlayerReady', "active", Global.UI.getAttribute(oldColor..'PlayerReady', 'active'))
+                        Global.UI.setAttribute(newColor..'NameWaiting', 'text', Global.UI.getAttribute(oldColor..'NameWaiting', 'text'))
+                        Global.UI.setAttribute(newColor..'NameReady', 'text', Global.UI.getAttribute(oldColor..'NameReady', 'text'))
+                        Global.UI.setAttribute(oldColor..'PlayerWaiting', "active", "false")
+                        Global.UI.setAttribute(oldColor..'PlayerReady', "active", "false")
+                        playerList[oldColor] = false
+                        playerList[newColor] = true
+                    end, 0.1)
+                end
+            end
+        end
+    end
+end
+
+function readyWhite()  readyButton("white")    end
+function readyBrown()  readyButton("brown")    end
+function readyRed()    readyButton("red")      end
+function readyOrange() readyButton("orange")   end
+function readyYellow() readyButton("yellow")   end
+function readyGreen()  readyButton("green")    end
+function readyTeal()   readyButton("teal")     end
+function readyBlue()   readyButton("blue")     end
+function readyPurple() readyButton("purple")   end
+function readyPink()   readyButton("pink")     end
+
+function readyButton(playerColor)
+    players.ready = players.ready + 1
+    players.waiting = players.waiting - 1
+    checkTitle()
+
+    Global.UI.setAttribute(playerColor..'PlayerWaiting', "active", "false")
+    Global.UI.setAttribute(playerColor..'PlayerReady', "active", "true")
+    Global.UI.setAttribute(playerColor..'ReadyButton', "active", "false")
+    Global.UI.setAttribute(playerColor..'NotReadyButton', "active", "true")
+
+    broadcastToAll(Player[playerColor].steam_name..": 준비완료!", Color.fromString(playerColor))
+end
+
+function notReadyWhite()  notReadyButton("white")    end
+function notReadyBrown()  notReadyButton("brown")    end
+function notReadyRed()    notReadyButton("red")      end
+function notReadyOrange() notReadyButton("orange")   end
+function notReadyYellow() notReadyButton("yellow")   end
+function notReadyGreen()  notReadyButton("green")    end
+function notReadyTeal()   notReadyButton("teal")     end
+function notReadyBlue()   notReadyButton("blue")     end
+function notReadyPurple() notReadyButton("purple")   end
+function notReadyPink()   notReadyButton("pink")     end
+
+function notReadyButton(playerColor)
+    players.ready = players.ready - 1
+    players.waiting = players.waiting + 1
+    checkTitle()
+
+    Global.UI.setAttribute(playerColor..'PlayerWaiting', "active", "true")
+    Global.UI.setAttribute(playerColor..'PlayerReady', "active", "false")
+    Global.UI.setAttribute(playerColor..'ReadyButton', "active", "true")
+    Global.UI.setAttribute(playerColor..'NotReadyButton', "active", "false")
+
+    broadcastToAll(Player[playerColor].steam_name..": 잠깐만 기다려 주세요! 레디 취소!", Color.fromString(playerColor))
+end
+
+function nextRoundButton()
+    for color, playing in pairs(playerList) do
+        if playing then
+            Global.UI.setAttribute(color..'PlayerReady', "active", "false")
+            Global.UI.setAttribute(color..'PlayerWaiting', "active", "true")
+            Global.UI.setAttribute(color..'ReadyButton', "active", "true")
+            Global.UI.setAttribute(color..'NotReadyButton', "active", "false")
+        end
+    end
+
+    broadcastToAll("--------------")
+    broadcastToAll("다음 라운드!")
+    broadcastToAll("--------------")
+
+    players.waiting = players.ready
+    players.ready = 0
+    checkTitle()
+    toggleZone()
+    startLuaCoroutine(self, 'setCards')
+end
+
+function newGame()
+  startLuaCoroutine(self, 'identity')
+  startLuaCoroutine(self, 'setCardsInit')
+end
+
+function dist()
+  startLuaCoroutine(self, 'setCards')
+end
+
+function identity()
+    local deck = nil
+    local deckPosition = {25.00, 1.00, 0.00}
+    local deckRestPosition = {52.00, 1.01, 35.00}
+    for _, object in ipairs(getAllObjects()) do
+      if (object.tag == 'Card' and (object.getName() == "광신자" or object.getName() == "조사자"))
+      or object.tag == 'Deck' and object.hasTag('identity') == true then
+        object.setPosition(deckPosition)
+        object.setRotation({0.00, 180.00, 180.00})
+      end
+    end
+    sleep(0.5)
+    for _, object in ipairs(getAllObjects()) do
+      if object.tag == 'Deck' and object.hasTag('identity') == true then
+        deck = object
+      end
+    end
+    sleep(0.5)
+    if deck == nil then
+      printToAll("카드가 부족합니다!")
+    else
+      deck.shuffle()
+      deck.deal(1)
+      deck.setPosition(deckRestPosition)
+    end
+    return 1
+end
+
+function setCards()
+  local deck = nil
+  local deckPosition = {15.00, 1.00, 0.00}
+  for _, object in ipairs(getAllObjects()) do
+    if (object.tag == 'Card' and (object.getName() ~= "광신자" and object.getName() ~= "조사자") and object.getZones()[1] ~= getObjectFromGUID('c8c652'))
+    or object.tag == 'Deck' and object.hasTag('identity') ~= true then
+      object.setPosition(deckPosition)
+      object.setRotation({0.00, 180.00, 180.00})
+    end
+  end
+  sleep(0.5)
+  for _, object in ipairs(getAllObjects()) do
+    if object.tag == 'Deck' and object.hasTag('identity') ~= true then
+      deck = object
+    end
+  end
+  sleep(0.5)
+  if deck == nil then
+    printToAll("카드가 부족합니다!")
+  else
+    deck.shuffle()
+    local dealNum = deck.getQuantity() / #getSeatedPlayers()
+    -- print(tonumber(dealNum))
+
+      deck.deal(tonumber(dealNum))
+      sleep(0.5)
+      countCards()
+    -- deck.dealToColorWithOffset({-2,0,5}, true)
+  end
+  return 1
+end
+
+function setCardsInit()
+  local deck = nil
+  local deckPosition = {15.00, 1.00, 0.00}
+  for _, object in ipairs(getAllObjects()) do
+    if (object.tag == 'Card' and (object.getName() ~= "광신자" and object.getName() ~= "조사자"))
+    or object.tag == 'Deck' and object.hasTag('identity') ~= true then
+      object.setPosition(deckPosition)
+      object.setRotation({0.00, 180.00, 180.00})
+    end
+  end
+  sleep(0.5)
+  for _, object in ipairs(getAllObjects()) do
+    if object.tag == 'Deck' and object.hasTag('identity') ~= true then
+      deck = object
+    end
+  end
+  sleep(0.5)
+  if deck == nil then
+    printToAll("카드가 부족합니다!")
+  else
+    deck.shuffle()
+    local dealNum = deck.getQuantity() / #getSeatedPlayers()
+    -- print(tonumber(dealNum))
+
+      deck.deal(tonumber(dealNum))
+      sleep(0.5)
+      countCards()
+    -- for color in ipairs(getSeatedPlayers()) do
+    --   if not(color == 'Grey' or color == 'Black') then
+    --     deck.deal(color, tonumber(dealNum))
+    --   end
+    -- end
+    -- deck.dealToColorWithOffset({-2,0,5}, true)
+  end
+  return 1
+end
+
+function countCards()
+if autoCount then
+for _, color in ipairs(getSeatedPlayers()) do
+  if not(color == 'Grey' or color == 'Black') then
+    local hands = Player[color].getHandObjects()
+    local eldersigns = 0
+    local cthulhu = 0
+    local exp = 0
+
+    eCounters[color].call("setNumTo", eldersigns)
+    cCounters[color].call("setNumTo", cthulhu)
+    exCounters[color].call("setNumTo", exp)
+    for _, card in ipairs(hands) do
+      if card.getName() == "엘더 사인" then
+        eldersigns = eldersigns + 1
+      elseif card.getName() == "크툴루" then
+        cthulhu = 1
+      elseif card.getName() == "허탕" or  card.getName() == "조사자" or  card.getName() == "광신자" then
+      else
+        exp = exp + 1
+      end
+    end
+
+    eCounters[color].call("setNumTo", eldersigns)
+    cCounters[color].call("setNumTo", cthulhu)
+    exCounters[color].call("setNumTo", exp)
+  end
+end
+end
+end
+
+function sleep(sec)
+    local fin = os.clock() + sec
+    while fin > os.clock() do
+        coroutine.yield(0)
+    end
+end
+
+function checkTitle()
+    newListHeight = (players.total * 60) + 110
+
+    if players.ready == 0 then
+        Global.UI.setAttribute('readyTitle', "active", "false")
+    else
+        Global.UI.setAttribute('readyTitle', "active", "true")
+        newListHeight = newListHeight + 80
+    end
+
+    if players.waiting == 0 then
+        Global.UI.setAttribute('waitingTitle', "active", "false")
+        Global.UI.setAttribute('nextRoundButton', "active", "true")
+        toggleZone()
+        newListHeight = newListHeight - 30
+    else
+        Global.UI.setAttribute('waitingTitle', "active", "true")
+        Global.UI.setAttribute('nextRoundButton', "active", "false")
+    end
+
+    Global.UI.setAttribute('readyUI', "height", tostring(newListHeight))
+end
+
+function onDestroy()
+    Global.UI.setAttribute('readyUI', "active", "false")
+end
+
+function toggleUI()
+  local visibility = Global.UI.getAttribute('readyUI', "active")
+  -- print(visibility)
+  if visibility == "true"  then
+    Global.UI.setAttribute('readyUI', "active", "false")
+  elseif visibility == "false" then
+    Global.UI.setAttribute('readyUI', "active", "true")
+  end
+end
+
+function toggleAutoCount()
+  autoCount = not autoCount
+  if autoCount == true then
+    autoStatus = "On"
+    printToAll("카운터 자동입력 기능이 켜졌습니다.")
+  else
+    autoStatus = "Off"
+    printToAll("카운터 자동입력 기능이 꺼졌습니다.")
+  end
+  self.editButton({
+    index          = 4,
+    label          = "자동입력 " .. autoStatus,
+  })
+  -- print(autoCount)
+end
+
+
+
+function toggleZone()
+    local allObjects = getAllObjects()
+    for _,o in ipairs(allObjects) do
+        if o.name == "FogOfWarTrigger" then
+            if o.isSmoothMoving() then
+              printToAll("히든존 이동중입니다! 잠시 기다려 주세요")
+              return end
+            o.setPosition({o.getPosition().x,offset,o.getPosition().z})
+        end
+    end
+    offset = offset * -1
+end

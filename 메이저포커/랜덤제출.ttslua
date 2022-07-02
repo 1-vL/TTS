@@ -1,0 +1,94 @@
+
+function onload()
+  self.createButton({ click_function = 'randSubmit',
+                      label = '랜덤 제출',
+                      function_owner = self,
+                      position = {2, 0.3, 2},
+                      rotation = {0, 0, 0},
+                      scale = {0.5, 1.00, 2},
+                      width = 400,
+                      height = 100,
+                      font_size = 60})
+end
+
+function prev()
+  cards = {}
+  local temp = findHitsInRadius()
+    for i, o in ipairs(temp) do
+      if o.getGMNotes() ~= "복사본" then
+        table.insert(cards, #cards+1, o)
+      end
+    end
+end
+
+function randSubmit(_, color)
+  if self.getGMNotes() == color then
+  prev()
+  local snaps = self.getSnapPoints() -- returns:
+  	-- {{Vector position, Vector rotation, bool rotation_snap}, ...}
+  for _, card in ipairs(Player[color].getHandObjects()) do
+    if card.is_face_down == false then
+      card.flip()
+    end
+  end
+
+  shuffleHand(obj, color)
+  Wait.frames(function()
+    for i=1, (4-#cards) do
+      table.insert(cards, #cards+1, Player[color].getHandObjects()[i])
+    end
+    local tempDeck = group(cards)[1]
+    if tempDeck ~= nil then
+    tempDeck.setPosition(self.positionToWorld({-1.826 , 0.302 , 0.000}))
+    for i, snap in ipairs(snaps) do
+      tempDeck.takeObject({
+        position          = self.positionToWorld(snaps[i].position),
+        rotation          = self.getRotation()
+      })
+    end
+    end
+  end, 10)
+  end
+end
+
+function shuffleHand(ob, pl)
+    local obj = Player[pl].getHandObjects() local card = {} for i, j in pairs(obj) do card[i] = j.getPosition() end local shuffledObj = shuffle(obj) local shuffledCard = shuffle(card) for i, j in pairs(shuffledObj) do j.setPosition(shuffledCard[i]) end
+end
+function shuffle(j)
+    for i = #j, 2, -1 do local n = math.random(i) j[i], j[n] = j[n], j[i] end return j
+end
+
+function findHitsInRadius()
+    local hitList = Physics.cast({
+        origin       = self.getPosition(),
+        direction    = {0,1,0},
+        type         = 3,
+        size         = {40,1,11.5},
+        max_distance = 0,
+        debug        = false,
+    })
+    local cards = {}
+      for j, ob in ipairs(hitList) do
+        local o = ob.hit_object
+        if o.tag == "Card" then
+          table.insert(cards, #cards+1, o)
+        end
+      end
+    return cards
+end
+
+
+function compareSnap(snapPos, cardPos)
+  if math.floor(snapPos.x*50) == math.floor(cardPos.x*50) and math.floor(snapPos.z*50) == math.floor(cardPos.z*50) then
+    return true
+  else
+  return false
+  end
+end
+
+function sleep(sec)
+    local fin = os.clock() + sec
+    while fin > os.clock() do
+        coroutine.yield(0)
+    end
+end

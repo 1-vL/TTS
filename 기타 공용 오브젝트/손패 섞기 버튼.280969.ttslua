@@ -1,0 +1,15 @@
+--by steamcommunity.com/id/SuperSpitzi
+function onLoad()
+    local button = {}
+    button.label = "" button.height = 600 button.width = 600 button.font_size = 500 button.position = {0, 0.15, 0} button.rotation = {0, 0, 0} button.click_function = 'shuffleHand' button.function_owner = self self.createButton(button)
+    button.label = "" button.height = 600 button.width = 600 button.font_size = 500 button.position = {0, 0.10, 0} button.rotation = {0, 0, 180} button.click_function = 'shuffleHand' button.function_owner = self self.createButton(button)
+end
+function shuffleHand(ob, pl)
+    local obj = Player[pl].getHandObjects() local card = {} for i, j in pairs(obj) do card[i] = j.getPosition() end local shuffledObj = shuffle(obj) local shuffledCard = shuffle(card) for i, j in pairs(shuffledObj) do j.setPosition(shuffledCard[i]) end
+end
+function shuffle(j)
+    for i = #j, 2, -1 do local n = math.random(i) j[i], j[n] = j[n], j[i] end return j
+end
+function onScriptingButtonUp(index, player_color)
+    if self.getRotation().z > 340 or self.getRotation().z < 20 then printToColor("[fffa00]Shuffle Hand - Button[-]: Flip the Button to enable Hotkeys (NUM 1).", player_color, {1,1,1}) else if index == 1 then shuffleHand(self, player_color) end end
+end

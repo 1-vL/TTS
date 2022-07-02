@@ -1,0 +1,490 @@
+SixSymbolColor = {White = '[FFFFFF]', Brown = '[703A16]', Red = '[DA1917]', Orange = '[F3631C]',
+    Yellow = '[E6E42B]', Green = '[30B22A]', Teal = '[20B09A]', Blue = '[1E87FF]',
+    Purple = '[9F1FEF]', Pink = '[F46FCD]'}
+
+plates = {
+  ['Red']=getObjectFromGUID('6ea527'),
+  ['Green']=getObjectFromGUID('30e2af'),
+  ['Blue']=getObjectFromGUID('35a157'),
+  ['Yellow']=getObjectFromGUID('013e4c'),
+}
+
+counters = {
+  ['Red']=getObjectFromGUID('d0ec2e'),
+  ['Green']=getObjectFromGUID('b36603'),
+  ['Blue']=getObjectFromGUID('5b3c40'),
+  ['Yellow']=getObjectFromGUID('e9849b'),
+}
+
+cardColors = {R="빨강",G="초록",B="파랑",Y="노랑",V="보라"}
+
+majors = {getObjectFromGUID('781f91')}
+typeUnSelected = {}
+
+discarded = {Yellow = getObjectFromGUID('010cbb'), Red = getObjectFromGUID('6b191d'), Green = getObjectFromGUID('5ab0da'), Blue = getObjectFromGUID('d461aa')}
+
+delList = {}
+
+deck = nil
+
+function onload()
+  self.createButton({ click_function = 'setup_auto',
+                      label = '게임시작',
+                      function_owner = self,
+                      position = {0, 0.3, 1},
+                      rotation = {0, 0, 0},
+                      width = 1400,
+                      height = 500,
+                      tooltip = "좌클릭으로 점수를 유지한 채 새로운 라운드를, 우클릭으로 점수를 초기화하고 새로운 게임을 시작합니다.",
+                      font_size = 200})
+  self.createButton({ click_function = 'score',
+                      label = '점수계산',
+                      function_owner = self,
+                      position = {0, 0.3, -1},
+                      rotation = {0, 0, 0},
+                      width = 1400,
+                      height = 500,
+                      tooltip = "좌클릭으로 점수를 추가하고, 우클릭으로 점수를 취소합니다.",
+                      font_size = 200})
+
+end
+
+function score(obj, color, click)
+  for i, pp in ipairs(getSeatedPlayers()) do
+  myCardColors = {}
+  myCardVals = {}
+  getMyCards(obj, pp)
+    if click then
+      counters[pp].call("setNumTo", counters[pp].getVar("val") - calc()[2])
+      printToAll(SixSymbolColor[pp] .. Player[pp].steam_name .. '[FFFFFF]님이 ' .. calc()[1] .. '로 얻은 ' .. calc()[2] .. '점을 취소합니다.')
+    else
+      counters[pp].call("setNumTo", counters[pp].getVar("val") + calc()[2])
+      printToAll(SixSymbolColor[pp] .. Player[pp].steam_name .. '[FFFFFF]님이 ' .. calc()[1] .. '로 ' .. calc()[2] .. '점을 얻었습니다.')
+    end
+  end
+end
+
+function calc()
+  sameNum = {0,0,0,0,0,0,0,0,0,0}
+  sameCol = {R=0,G=0,B=0,Y=0,V=0}
+  sameFull = {R={0,0,0,0,0,0,0,0,0,0},G={0,0,0,0,0,0,0,0,0,0},B={0,0,0,0,0,0,0,0,0,0},Y={0,0,0,0,0,0,0,0,0,0},V={0,0,0,0,0,0,0,0,0,0}}
+  maxStreak = 0
+  majorColor = string.split(getObjectFromGUID('781f91').call("getMajor"), " ")[1]
+  highMajorNum = 0
+  colDuple = false
+  isPair = false
+  isTriple = false
+  isFullHouse = false
+  isMajor = false
+  isTripleMajor = false
+  isPairMajor = false
+
+  checkMajor()
+  for i=1, 5 do
+    -- print(sameFull[myCardColors[i]][myCardVals[i]])
+    -- broadcastToAll(myCardVals[i])
+    sameNum[myCardVals[i]] = sameNum[myCardVals[i]] + 1
+    sameCol[myCardColors[i]] = sameCol[myCardColors[i]] + 1
+    sameFull[myCardColors[i]][myCardVals[i]] = sameFull[myCardColors[i]][myCardVals[i]] + 1
+    if majorColor == myCardColors[i] and myCardVals[i] > highMajorNum then
+      highMajorNum = myCardVals[i]
+    end
+  end
+  -- 기록 완료
+
+  --팔레트
+  if palette()[1] then
+    return {"팔레트", palette()[2]}
+  end
+
+  --쿼드라
+
+  if quadra()[1] then
+    return {"쿼드라", quadra()[2]*15}
+  end
+  -- color
+  for i, colNum in pairs(sameCol) do
+    if colNum == 5 and straight()[1] then
+      colDuple = true
+      return {"스티플", straight()[2]*20}
+    elseif colNum == 5 and isMajor then
+      colDuple = true
+      return {"메이저 플러쉬", straight()[2]*12}
+    elseif colNum == 5 then
+      colDuple = true
+      return {"플러쉬", straight()[2]*8}
+      -- 다른 색깔 섞임
+    elseif colNum >= 2 then
+      -- print("같은 색 존재")
+      colDuple = true
+    else
+    --콰트로
+      -- 모두 다른 색
+    end
+  end
+
+  -- 스트레이트
+  -- printToAll(isMajor)
+  if straight()[1] and colDuple == true and isMajor == true then
+    return {"메이저 스트레이트", straight()[2]*7}
+  elseif straight()[1] and colDuple == true then
+      return {"스트레이트", straight()[2]*5}
+  elseif straight()[1] and colDuple == false then
+    return {"콰트레이트", straight()[2]*15}
+  end
+  --풀하우스
+  if fullHouse()[1] and colDuple == false then
+    return {"콰트로우스", fullHouse()[2] + triple()[3] * 2}
+  elseif fullHouse()[1] then
+    return {"풀하우스", fullHouse()[2]}
+  end
+  --페어
+  if pair()[1] then
+      return {"페어", pair()[2]}
+  end
+  --트리플
+  if triple()[1] then
+    return {"트리플", triple()[2]}
+  end
+
+  if colDuple == false then
+    return {"콰트로", getPlainSum() + highMajorNum * 2}
+  end
+
+  --하이메이저
+  if isMajor == true then
+    return {"하이메이저", highMajorNum}
+  end
+  --아무것도 없음
+    return {"족보 없음으", 0}
+end -- calc end
+
+function quadra()
+  local majorNum = 0
+  for i=1, 8 do
+    if sameNum[i] == 4 then
+      majorNum = i
+    end
+  end
+  for i=1, 5 do
+    if myCardVals[i] == majorNum and myCardColors[i] == majorColor then
+      return {true, majorNum}
+    end
+  end
+    return {false, majorNum}
+end
+
+function fullHouse()
+  pair()
+  triple()
+  local sum = 0
+  if isPair and isTriple then
+    isFullHouse = true
+    sum = getPlainSum()
+    if isTripleMajor then
+      sum = sum + triple()[3] * 3
+    else
+      sum = sum + triple()[3] * 2
+    end
+    return {isFullHouse, sum}
+  end
+  return {isFullHouse, sum}
+end
+
+function getPlainSum()
+  local sum = 0
+  for i = 1, 5 do
+    if myCardVals[i] ~= 9 then
+      sum = sum + myCardVals[i]
+    end
+  end
+  return sum
+end
+
+function pair()
+  local sum = 0
+  local pairNum = 0
+  for i=0, 8 do -- 색깔은 페어가 아님
+    if sameNum[i] == 2 then
+      isPair = true
+      pairNum = i
+      sum = i * 2
+    end
+  end
+  -- print(isMajor)
+    if isMajor then
+      for i = 1, 5 do
+          if myCardVals[i] == pairNum and myCardColors[i] == majorColor then
+          sum = pairNum * 3
+          isPairMajor = true
+        end
+      end
+    end
+  return {isPair, sum}
+end
+
+function triple()
+  local sum = 0
+  local netSum = 0
+  local tripleNum = 0
+  for i=0, 8 do
+    if sameNum[i] == 3 then
+      isTriple = true
+      tripleNum = i
+      sum = i * 3
+      netSum = i * 3
+    end
+  end
+  -- print(isMajor)
+    if isMajor then
+      for i = 1, 5 do
+          if myCardVals[i] == tripleNum and myCardColors[i] == majorColor then
+          sum = tripleNum * 4
+          isTripleMajor = true
+        end
+      end
+    end
+    return {isTriple, sum, netSum}
+end
+
+function checkMajor()
+  for i = 1, 5 do
+    if majorColor == myCardColors[i] then
+      isMajor = true
+    end
+  end
+end
+
+function palette()
+  if sameNum[9] == 5 then
+    return {true, 150}
+  else
+    return {false, 0}
+  end
+end
+
+function straight()
+  local checkNum = 0
+  local midNum = 0
+  local highNum = getHighNum()
+  local temp = ""
+
+  if highNum == 9 then
+    midNum = 6
+  else
+    midNum = highNum - 2
+  end
+
+  for i=1, 9 do
+    temp = temp .. sameNum[i]
+  end
+  -- print(temp)
+  local startpos = string.find(temp, "11111", 1, true)
+  if startpos ~= nil then
+    -- print(startpos)
+    return {true, midNum}
+  else
+    return {false, midNum}
+  end
+end
+
+function getHighNum()
+  local highNum = 0
+  for i=1, 5 do
+    if myCardVals[i] > highNum then
+      highNum = myCardVals[i]
+    end
+  end
+  return highNum
+end
+
+function getMyCards(obj, color)
+  local myCards = plates[color].call("findHitsInRadius")
+  for i, card in ipairs(myCards) do
+    -- local cardColStr = cardColors[string.split(card.getDescription(), " ")[1]]
+    local cardCol = string.split(card.getDescription(), " ")[1]
+    local cardVal = string.split(card.getDescription(), " ")[2]
+    -- print(cardCol)
+    if cardVal == "A" then
+      cardVal = 1
+    elseif cardVal == "C" then
+      -- cardVal = string.split(card.getDescription(), " ")[1]
+      cardVal = 9
+    else
+      cardVal = tonumber(cardVal)
+    end
+    -- print(cardVal)
+    table.insert(myCardColors, #myCardColors+1, cardCol)
+    table.insert(myCardVals, #myCardVals+1, cardVal)
+  end
+end
+
+function setup_auto(_, _, click)
+  if click then
+    if checkPlayersSeated() then
+      startLuaCoroutine(self, "setup")
+      FirstPlayer()
+      resetScore()
+    end
+  else
+    if checkPlayersSeated() then
+      startLuaCoroutine(self, "setup")
+      FirstPlayer()
+    end
+  end
+end
+
+function checkPlayersSeated()
+  	local seatedPlayers = getSeatedPlayers()
+  	if TEST then
+  		seatedPlayers = {'Yellow', 'Red', 'Green', 'Blue', 'Black', 'Grey'}
+  	end
+  	seatedPlayerColors = {}
+  	for _, playerColor in ipairs(seatedPlayers) do
+  		if playerColor == 'Yellow' or playerColor == 'Red' or playerColor == 'Green' or playerColor == 'Blue' then
+  			table.insert(seatedPlayerColors, playerColor)
+        -- counters[playerColor].call("setNumTo", 0)
+  		end
+  	end
+  	if #seatedPlayerColors == 0 then
+  		broadcastToAll('게임 시작 전에 자리에 앉아 주세요.')
+  		return false
+  	end
+  	if #seatedPlayerColors ~= #seatedPlayers then
+  		broadcastToAll('모든 플레이어가 자리에 앉았는지 확인해 주세요.')
+  		return false
+    end
+  	return true
+  end
+
+function FirstPlayer()
+    q = 1
+    PlayerColors = {}
+    PlayerNames = {}
+    for _, p in ipairs(getSeatedPlayers()) do
+    PlayerColors[q] = Player[p].color
+    PlayerNames[q] = Player[p].steam_name
+    q = q+1
+    end
+
+    RandomPlayer = math.random(1, #PlayerColors) + os.date('%S')
+    RandomPlayer = math.fmod(RandomPlayer,#PlayerColors)
+    if RandomPlayer < 0 then RandomPlayer = RandomPlayer + #PlayerColors end
+    RandomPlayer = RandomPlayer + 1
+
+    pl = PlayerColors[RandomPlayer]
+    broadcastToAll(SixSymbolColor[tostring(pl)] .. PlayerNames[RandomPlayer] .. '[FFFFFF] 님이 [i]선 플레이어 입니다[/i]')
+
+    Turns.enable = true
+    Turns.turn_color = pl
+
+  end
+
+function setup()
+
+  for i, card in ipairs(delList) do
+    -- print(card)
+    if card ~= nil then
+      card.destruct()
+    end
+  end
+  delList = {}
+
+  sleep(1)
+  cards = getCards()
+  sleep(2)
+  deck = getDeck()
+  deck.shuffle()
+  sleep(0.2)
+  deck.deal(5)
+
+  for _, c in ipairs(majors) do
+    -- print(discarded[c])
+    deck.takeObject({
+      position          = c.getPosition() + vector(0, 1, 0),
+      rotation          = c.getRotation() + vector(0, 90, 0)
+    })
+  end
+  local common = deck.takeObject({
+    position          = getObjectFromGUID('efc9f1').getPosition() + vector(0, 1, 0),
+    rotation          = getObjectFromGUID('efc9f1').getRotation() + vector(0, 270, 0)
+  })
+
+  local copyList = {}
+  table.insert(copyList, #copyList+1, common)
+  for i, color in ipairs(getSeatedPlayers()) do
+    copy(copyList)
+    local temp = paste({
+        position          = discarded[color].getPosition() + vector(0, 0, 0),
+        rotation          = discarded[color].getRotation()
+    })[1]
+    temp.setGMNotes('복사본')
+    -- temp.flip()
+    temp.setRotation(discarded[color].getRotation() + vector(0, 270, 0))
+    temp.setPosition(discarded[color].getPosition() + vector(0, 0.1, 0))
+    temp.setLock(true)
+    table.insert(delList, #delList+1, temp)
+  end
+  setNotes("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n제작 by Baek_UP\n스크립트 by 3JA2")
+  return 1
+end
+
+function getCards()
+    local cards = {}
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+
+        if object.getGMNotes() == "복사본" then
+          object.destruct()
+        end
+
+        if object.tag == "Card" or object.tag == "Deck" then
+            cards[#cards+1] = object
+            object.setLock(false)
+            object.setPosition({0.00, 2.00 + 0.01*index, 0.00})
+            object.setRotation({0.00, 0.00, 180.00})
+        end
+    end
+    return cards
+end
+
+function getDeck()
+    local objects = getAllObjects()
+    local deck = nil
+    for index, object in ipairs(objects) do
+        if object.tag == "Deck" then
+              deck = object
+        end
+    end
+    if deck ~= nil then
+      deck.setName("메인 덱")
+    end
+  return deck
+end
+
+function resetScore()
+  local pp = {'Yellow', 'Red', 'Green', 'Blue' }
+  for _, playerColor in ipairs(pp) do
+      counters[playerColor].call("setNumTo", 0)
+  end
+end
+
+function string:split(delimiter)
+local result = { }
+local from = 1
+local delim_from, delim_to = string.find( self, delimiter, from )
+while delim_from do
+  table.insert( result, string.sub( self, from , delim_from-1 ) )
+  from = delim_to + 1
+  delim_from, delim_to = string.find( self, delimiter, from )
+end
+table.insert( result, string.sub( self, from ) )
+return result
+end
+
+function sleep(sec)
+    local fin = os.clock() + sec
+    while fin > os.clock() do
+        coroutine.yield(0)
+    end
+end
