@@ -1,0 +1,30 @@
+textPos = {
+  {-0.615 , 0.112 , -1.088},
+  {0.154 , 0.112 , -0.821},
+  {0.462 , 0.112 , -0.288},
+  {0.615 , 0.112 , 0.512},
+  {-0.001 , 0.114 , 1.044},
+  {-0.462 , 0.112 , 1.310},
+  {-1.231 , 0.112 , 1.043},
+  {-1.539 , 0.112 , 0.510},
+  {-1.692 , 0.112 , -0.289},
+  {-1.384 , 0.112 , -0.822}
+}
+
+function setVill(info)
+  for i, c in ipairs(info) do
+    self.createButton({
+      click_function = "none",
+      function_owner = self,
+      label          = c,
+      position       = textPos[i],
+      width          = 0,
+      height         = 0,
+      font_size      = 100,
+      font_color     = self.getGMNotes(),
+      })
+  end
+end
+
+function none()
+end

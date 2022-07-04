@@ -1,0 +1,273 @@
+
+card_Colors = {["노랑"] = "Yellow", ["파랑"] = "Blue", ["빨강"] = "Red", ["검정"] = "Black", ["초록"] = "Green", ["보라"] = "Purple"}
+simColors = {"노랑", "파랑", "빨강", "검정", "초록", "보라"}
+SixSymbolColor = {White = '[FFFFFF]', Brown = '[703A16]', Red = '[DA1917]', Orange = '[F3631C]',
+    Yellow = '[E6E42B]', Green = '[30B22A]', Teal = '[20B09A]', Blue = '[1E87FF]',
+    Purple = '[9F1FEF]', Pink = '[F46FCD]'}
+
+playerArea = {["Blue"] = getObjectFromGUID('1f223b'), ["Teal"] = getObjectFromGUID('3fee9c'), ["Green"] = getObjectFromGUID('60b45a'), ["Orange"] = getObjectFromGUID('d5e44a'),
+    ["Red"] = getObjectFromGUID('1f5352'), ["Brown"] = getObjectFromGUID('d362d6'), ["Purple"] = getObjectFromGUID('65d6f1'), ["Yellow"] = getObjectFromGUID('c10f83')}
+
+deck = nil
+turnOrder = {"Yellow", "Purple", "Brown", "Red", "Orange", "Green", "Teal", "Blue"}
+tempOrder = {}
+function onload()
+  self.createButton({ click_function = 'setup_auto',
+                      label = '게임시작',
+                      function_owner = self,
+                      position = {0, 0.3, 0},
+                      rotation = {0, 0, 0},
+                      width = 1400,
+                      height = 500,
+                      font_size = 200})
+end
+
+
+
+function setup_auto()
+    if checkPlayersSeated() then
+      FirstPlayer()
+      startLuaCoroutine(self, "setup")
+      --getObjectFromGUID('b58cdb').call("buttonPress")
+      --self.destruct()
+
+      -- edit1()
+      end
+end
+
+function setVillage()
+  -- local villInfo = {"A", "B", "C", "D", "E", "A", "B", "C", "D", "E"}
+  -- print(currentLocation)
+  local villInfo = {}
+
+  for i=1, 10 do
+    table.insert(villInfo, #villInfo+1, string.split(currentLocation, " ")[i])
+    -- print(string.split(currentLocation, " ")[i])
+  end
+  for i, color in ipairs(tempOrder) do
+    local tempInfo = {nil,nil,nil,nil,nil,nil,nil,nil,nil,nil}
+      for j=1, 10 do
+        local newIndex = (i-j-1)%10
+        if newIndex == 0 then
+          table.insert(tempInfo, j, villInfo[10])
+        else
+          table.insert(tempInfo, j, villInfo[10-newIndex])
+        end
+      end
+    playerArea[color].clearButtons()
+    playerArea[color].call("setVill", tempInfo)
+  end
+end
+
+function checkPlayersSeated()
+  	local seatedPlayers = getSeatedPlayers()
+  	if TEST then
+  		seatedPlayers = {'Brown', 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Teal', 'Black', 'Grey'}
+  	end
+  	seatedPlayerColors = {}
+  	for _, playerColor in ipairs(seatedPlayers) do
+  		if playerColor == 'Brown' or playerColor == 'Red' or playerColor == 'Orange' or playerColor == 'Yellow' or playerColor == 'Green' or playerColor == 'Blue' or playerColor == 'Purple' or playerColor == 'Teal' then
+  			table.insert(seatedPlayerColors, playerColor)
+  		end
+  	end
+  	if #seatedPlayerColors == 0 then
+  		broadcastToAll('게임 시작 전에 자리에 앉아 주세요.')
+  		return false
+  	end
+  	if #seatedPlayerColors ~= #seatedPlayers then
+  		broadcastToAll('모든 플레이어가 자리에 앉았는지 확인해 주세요.')
+  		return false
+    end
+  	return true
+  end
+
+
+function FirstPlayer()
+    q = 1
+    PlayerColors = {}
+    PlayerNames = {}
+    for _, p in ipairs(getSeatedPlayers()) do
+    PlayerColors[q] = Player[p].color
+    PlayerNames[q] = Player[p].steam_name
+    q = q+1
+    end
+
+    RandomPlayer = math.random(1, #PlayerColors) + os.date('%S')
+    RandomPlayer = math.fmod(RandomPlayer,#PlayerColors)
+    if RandomPlayer < 0 then RandomPlayer = RandomPlayer + #PlayerColors end
+    RandomPlayer = RandomPlayer + 1
+
+    pl = PlayerColors[RandomPlayer]
+    broadcastToAll(SixSymbolColor[tostring(pl)] .. PlayerNames[RandomPlayer] .. '[FFFFFF] 님이 [i]선 플레이어 입니다[/i]')
+
+    Turns.enable = true
+    Turns.turn_color = pl
+    --currentTurn = 1
+    tempOrder = {}
+
+    for i, c in ipairs(turnOrder) do
+      for j, sc in ipairs(getSeatedPlayers()) do
+        if #tempOrder == #getSeatedPlayers() then
+          break
+        end
+         if sc == pl then
+           table.insert(tempOrder, #tempOrder+1, sc)
+           if j+1 <= #getSeatedPlayers() then
+             pl = getSeatedPlayers()[j+1]
+           else
+             pl = getSeatedPlayers()[(j+1)%#getSeatedPlayers()]
+           end
+         end
+      end
+    end
+  end
+
+function setup()
+  sleep(1)
+  cards = getCards()
+  sleep(2)
+  deck = getDeck()
+  for i, c in ipairs(deck.getObjects()) do
+      local card = deck.takeObject({
+        position          = deck.getPosition() + vector(0, 3, 0),
+      })
+    if card.getGMNotes() == "지형 카드" then
+      card.setPosition({-10.00, 1.57, -26.00})
+      card.setRotation(deck.getRotation())
+    elseif card.getGMNotes() == "관광지 카드" then
+      card.setPosition({-10.00, 1.50, -18.00})
+      card.setRotation(deck.getRotation())
+    elseif card.getGMNotes() == "마을 선착순 카드" then
+      card.setPosition({0.00, 1.50, -18.00})
+      card.setRotation(deck.getRotation())
+    else
+      card.setPosition(deck.getPosition() + vector(0, -0.1, 0))
+      card.setRotation(deck.getRotation())
+    end
+  end
+  sleep(0.2)
+  locationDeck = getLocationDeck()
+  locationDeck.shuffle()
+  local locationPos = {8.00, 1.50, -22.00}
+  local currentLocationCard = locationDeck.takeObject({
+    position          = locationPos,
+    rotation          = {0.00, 180.00, 0.00},
+  })
+  currentLocation = currentLocationCard.getDescription()
+  -- sleep(0.2)
+  goalDeck = getGoalDeck()
+  goalDeck.shuffle()
+  tourDeck = getTourDeck()
+  tourDeck.shuffle()
+  terrainDeck = getTerrainDeck()
+  terrainDeck.shuffle()
+  -- print(locationDeck.hasTag("location"))
+  terrainDeck.createButton({
+    click_function = "nextRound",
+    function_owner = self,
+    label          = "1111",
+    position       = terrainDeck.getPosition() + vector(0, 0.5, 0),
+    width          = 1000,
+    height         = 1000,
+    font_size      = 100,
+    color          = "Black",
+    font_color     = "Black",
+  })
+
+  setVillage()
+  setNotes("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n스크립트 by 3JA2")
+  return 1
+end
+
+function nextRound()
+  for i =1 , 2  do
+    local card = terrainDeck.takeObject({
+      position          = {0.00, 1.50, 10.00 + 5.00 * (i-1)},
+      rotation          = {0.00, 90.00, 0.00},
+    })
+  end
+end
+
+function getCards()
+    local cards = {}
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+        if object.tag == "Card" or object.tag == "Deck" then
+            cards[#cards+1] = object
+            object.setLock(false)
+            object.setPosition({0.00, 1.80 + 0.01*index, -26.00})
+            object.setRotation({0.00, 90.00, 180.00})
+        end
+    end
+    return cards
+end
+
+function getGoalDeck()
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+        if object.tag == "Deck" and object.hasTag("goal") then
+          object.setName("목표 덱")
+            return object
+        end
+    end
+end
+function getLocationDeck()
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+        if object.tag == "Deck" and object.hasTag("location") then
+          object.setName("마을 위치 덱")
+            return object
+        end
+    end
+end
+function getTourDeck()
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+        if object.tag == "Deck" and object.hasTag("Tourist destination")  then
+          object.setName("관광지 덱")
+            return object
+        end
+    end
+end
+
+function getTerrainDeck()
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+        if object.tag == "Deck" and object.hasTag("terrain") then
+          object.setName("지형 덱")
+            return object
+        end
+    end
+end
+
+function getDeck()
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+        if object.tag == "Deck" then
+          object.setName("메인 덱")
+            return object
+        end
+    end
+end
+
+
+function sleep(sec)
+    local fin = os.clock() + sec
+    while fin > os.clock() do
+        coroutine.yield(0)
+    end
+end
+
+
+function string:split(delimiter)
+local result = { }
+local from = 1
+local delim_from, delim_to = string.find( self, delimiter, from )
+while delim_from do
+  table.insert( result, string.sub( self, from , delim_from-1 ) )
+  from = delim_to + 1
+  delim_from, delim_to = string.find( self, delimiter, from )
+end
+table.insert( result, string.sub( self, from ) )
+return result
+end
