@@ -93,7 +93,7 @@ function setup()
       temp.setLock(true)
       table.insert(delList, #delList+1, temp)
     end
-  setNotes("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n제작 by Baek_UP\n스크립트 by 3JA2")
+  setNotes("내 차례 행동\n\n- 1장 또는 2장 배치\n- 내 핸드 하나 버리고 상대 마지막 배치 보기\n- 내 마지막 배치 버리고 2장 뽑기\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n제작 by Baek_UP\n스크립트 by 3JA2")
   return 1
 end
 
@@ -113,9 +113,9 @@ function score(obj, color, click)
 end
 
 function calc()
-  sameNum = {0,0,0,0,0,0,0,0,0,0}
+  sameNum = {0,0,0,0,0,0,0,0,0}
   sameCol = {R=0,G=0,B=0,Y=0,V=0}
-  sameFull = {R={0,0,0,0,0,0,0,0,0,0},G={0,0,0,0,0,0,0,0,0,0},B={0,0,0,0,0,0,0,0,0,0},Y={0,0,0,0,0,0,0,0,0,0},V={0,0,0,0,0,0,0,0,0,0}}
+  sameFull = {R={0,0,0,0,0,0,0,0,0},G={0,0,0,0,0,0,0,0,0},B={0,0,0,0,0,0,0,0,0},Y={0,0,0,0,0,0,0,0,0},V={0,0,0,0,0,0,0,0,0}}
   maxStreak = 0
   majorColor = string.split(getObjectFromGUID('781f91').call("getMajor"), " ")[1]
   highMajorNum = 0
@@ -165,22 +165,19 @@ function calc()
   end
   -- color
   for i, colNum in pairs(sameCol) do
-    if colNum == 5 and straight()[1] then
+    if colNum == 5 then
       colDuple = true
+
       -- return {"스티플", straight()[2]*20}
-      if straight()[2]*20 > resultScore then
+      if straight()[1] and straight()[2]*20 > resultScore then
         result="스티플"
         resultScore = straight()[2]*20
       end
-    elseif colNum == 5 and isMajor then
-      colDuple = true
       -- return {"메이저 플러쉬", straight()[2]*12}
-      if straight()[2]*12 > resultScore then
+      if isMajor and straight()[2]*12 > resultScore then
         result="메이저 플러쉬"
         resultScore = straight()[2]*12
       end
-    elseif colNum == 5 then
-      colDuple = true
       -- return {"플러쉬", straight()[2]*8}
       if straight()[2]*8 > resultScore then
         result="플러쉬"
@@ -198,18 +195,17 @@ function calc()
 
   -- 스트레이트
   -- printToAll(isMajor)
-  if straight()[1] and colDuple == true and highMajorNum == getHighNum() then
+  if straight()[1] and colDuple == true then
     -- return {"메이저 스트레이트", straight()[2]*7}
-    if straight()[2]*7 > resultScore then
+    if highMajorNum == getHighNum() and straight()[2]*7 > resultScore then
       result="메이저 스트레이트"
       resultScore = straight()[2]*7
     end
-  elseif straight()[1] and colDuple == true then
-      -- return {"스트레이트", straight()[2]*5}
-      if straight()[2]*5 > resultScore then
-        result="스트레이트"
-        resultScore = straight()[2]*5
-      end
+    -- return {"스트레이트", straight()[2]*5}
+    if straight()[2]*5 > resultScore then
+      result="스트레이트"
+      resultScore = straight()[2]*5
+    end
   elseif straight()[1] and colDuple == false then
     -- return {"콰트레이트", straight()[2]*15}
     if straight()[2]*15 > resultScore then
@@ -224,7 +220,7 @@ function calc()
       result="콰트로우스"
       resultScore = fullHouse()[2] + triple()[3] * 2
     end
-  elseif fullHouse()[1] then
+  elseif fullHouse()[1] and colDuple then
     -- return {"풀하우스", fullHouse()[2]}
     if fullHouse()[2] > resultScore then
       result="풀하우스"
