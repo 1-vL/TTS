@@ -1,3 +1,6 @@
+easyLink = 'http://imgway.cz/v/Gy7.jpg'
+hardLink = 'http://imgway.cz/v/Gy8.jpg'
+
 textPos = {
   {-0.615 , 0.112 , -1.088},
   {0.154 , 0.112 , -0.821},
@@ -11,19 +14,60 @@ textPos = {
   {-1.384 , 0.112 , -0.822}
 }
 
+textPosHard = {
+  {-0.59 , 0.117 , -0.903},
+  {0.385 , 0.112 , -0.696},
+  {0.638 , 0.112 , -0.244},
+  {0.632 , 0.112 , 0.682},
+  {0.105 , 0.112 , 1.121},
+  {-0.542 , 0.112 , 1.373},
+  {-1.336 , 0.112 , 1.363},
+  {-1.864 , 0.112 , 0.447},
+  {-1.735 , 0.112 , -0.241},
+  {-1.329 , 0.112 , -0.908}
+}
+
 function setVill(info)
+    vilInfo = info
+    local diff = getObjectFromGUID('a769df').getVar("hard")
+    local tempPos = {}
+    if diff then
+      tempPos = textPosHard
+    else
+      tempPos = textPos
+    end
   for i, c in ipairs(info) do
     self.createButton({
       click_function = "none",
       function_owner = self,
       label          = c,
-      position       = textPos[i],
+      position       = tempPos[i],
       width          = 0,
       height         = 0,
       font_size      = 100,
       font_color     = self.getGMNotes(),
       })
   end
+end
+
+function mapUse()
+    local diff = getObjectFromGUID('a769df').getVar("hard")
+    -- print(diff)
+    local tempPos = {}
+    if diff then
+      self.setCustomObject({image = hardLink,})
+      tempPos = textPosHard
+    else
+      self.setCustomObject({image = easyLink,})
+      tempPos = textPos
+    end
+end
+
+function sleep(sec)
+    local fin = os.clock() + sec
+    while fin > os.clock() do
+        coroutine.yield(0)
+    end
 end
 
 function none()

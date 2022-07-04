@@ -11,6 +11,9 @@ playerArea = {["Blue"] = getObjectFromGUID('1f223b'), ["Teal"] = getObjectFromGU
 deck = nil
 turnOrder = {"Yellow", "Purple", "Brown", "Red", "Orange", "Green", "Teal", "Blue"}
 tempOrder = {}
+tourExp = false
+hard = false
+
 function onload()
   self.createButton({ click_function = 'setup_auto',
                       label = '게임시작',
@@ -20,9 +23,66 @@ function onload()
                       width = 1400,
                       height = 500,
                       font_size = 200})
+  self.createButton({ click_function = 'nextRound',
+                      label = '다음 라운드',
+                      function_owner = self,
+                      position = {0, 0.3, 1.5},
+                      rotation = {0, 0, 0},
+                      width = 1400,
+                      height = 500,
+                      font_size = 200})
+  self.createButton({ click_function = 'useExp',
+                      label = '관광지\n확장 사용 X',
+                      function_owner = self,
+                      position = {-3, 0.3, 1.5},
+                      rotation = {0, 0, 0},
+                      width = 800,
+                      height = 400,
+                      font_size = 100})
+  self.createButton({ click_function = 'diffToggle',
+                      label = '쉬운 난이도',
+                      function_owner = self,
+                      position = {-3, 0.3, 0},
+                      rotation = {0, 0, 0},
+                      width = 800,
+                      height = 400,
+                      font_size = 100})
 end
 
+function diffToggle()
+  hard = not hard
+  setMap()
+  if hard then
+    self.editButton({
+      index          = 3,
+      label          = '고급 난이도',
+    })
+    broadcastToAll("더 넓은 맵을 사용합니다.")
+  else
+    self.editButton({
+      index          = 3,
+      label          = '쉬운 난이도',
+    })
+    broadcastToAll("기본 맵을 사용합니다.")
+  end
+end
 
+function useExp()
+  tourExp = not tourExp
+  if tourExp then
+    self.editButton({
+      index          = 2,
+      label          = '관광지\n확장 사용 O',
+    })
+    broadcastToAll("관광지 목표 카드를 사용합니다.")
+  else
+    self.editButton({
+      index          = 2,
+      label          = '관광지\n확장 사용 X',
+    })
+    broadcastToAll("관광지 목표 카드를 사용하지 않습니다.")
+  end
+end
 
 function setup_auto()
     if checkPlayersSeated() then
@@ -44,6 +104,11 @@ function setVillage()
     table.insert(villInfo, #villInfo+1, string.split(currentLocation, " ")[i])
     -- print(string.split(currentLocation, " ")[i])
   end
+
+  for i, color in ipairs(Player.getAvailableColors()) do
+    playerArea[color].setInvisibleTo(Player.getColors())
+  end
+
   for i, color in ipairs(tempOrder) do
     local tempInfo = {nil,nil,nil,nil,nil,nil,nil,nil,nil,nil}
       for j=1, 10 do
@@ -54,8 +119,27 @@ function setVillage()
           table.insert(tempInfo, j, villInfo[10-newIndex])
         end
       end
-    playerArea[color].clearButtons()
+    -- playerArea[color].clearButtons()
+    playerArea[color].setInvisibleTo({})
     playerArea[color].call("setVill", tempInfo)
+    -- playerArea[color].call("setMap")
+    -- playerArea[color].reload()
+  end
+end
+
+function setMap()
+  easyLink = 'http://imgway.cz/v/Gy7.jpg'
+  hardLink = 'http://imgway.cz/v/Gy8.jpg'
+
+  for i, color in ipairs(getSeatedPlayers()) do
+    -- playerArea[color].call("mapUse")
+    if hard then
+      playerArea[color].setCustomObject({image = hardLink,})
+    else
+      playerArea[color].setCustomObject({image = easyLink,})
+    end
+    playerArea[color] = playerArea[color].reload()
+    -- print(color)
   end
 end
 
@@ -122,6 +206,20 @@ function FirstPlayer()
     end
   end
 
+  function nextRound()
+    startLuaCoroutine(self, "nr")
+  end
+
+  function nr()
+    sleep(0.5)
+    cards = getTerrainCards()
+    sleep(0.5)
+    terrainDeck = getTerrainDeck()
+    terrainDeck.shuffle()
+    -- print(locationDeck.hasTag("location"))
+    return 1
+  end
+
 function setup()
   sleep(1)
   cards = getCards()
@@ -149,43 +247,82 @@ function setup()
   locationDeck = getLocationDeck()
   locationDeck.shuffle()
   local locationPos = {8.00, 1.50, -22.00}
+  local tourPos = {-9.20, 1.50, -11.50}
+  local goalPos = {0.00, 1.50, -11.50}
   local currentLocationCard = locationDeck.takeObject({
     position          = locationPos,
     rotation          = {0.00, 180.00, 0.00},
   })
   currentLocation = currentLocationCard.getDescription()
   -- sleep(0.2)
-  goalDeck = getGoalDeck()
-  goalDeck.shuffle()
-  tourDeck = getTourDeck()
+  -- goalDeck = getGoalDeck()
+
+  delGoalDeck = getGoalDeck()
+  if delGoalDeck ~= nil then
+    delGoalDeck.destruct()
+  end
+  goalDeck = getObjectFromGUID('a58fd6').takeObject({
+    position          = {0.00, 2.50, -18.00},
+    rotation          = {0.00, 90.00, 0.00},
+  })
+  sleep(0.5)
+  local goals = 5
+  if #getSeatedPlayers() > 4 then
+    goals = 10
+  end
+    for i=1, goals do
+      goalDeck.takeObject({
+        position          = goalDeck.getPosition() + vector(0, 0 - i * 0.1, 6.90 * ((i-1)%5+1)),
+        rotation          = {0.00, 90.00, 0.00},
+      })
+    end
+  goalDeck.destruct()
+
+  delTourDeck = getTourDeck()
+  if delTourDeck ~= nil then
+    delTourDeck.destruct()
+  end
+  if tourExp then
+  tourDeck = getObjectFromGUID('c27abd').takeObject({
+    position          = {-10.00, 2.50, -18.00},
+    rotation          = {0.00, 90.00, 0.00},
+  })
+  sleep(0.5)
+
+  local tours = 1
+  if #getSeatedPlayers() > 4 then
+    tours = 2
+  end
   tourDeck.shuffle()
+  for i=1, tours do
+    tourDeck.takeObject({
+      position          = tourDeck.getPosition() + vector(0, 0, 6.90 * i),
+      rotation          = {0.00, 90.00, 0.00},
+    })
+  end
+    tourDeck.destruct()
+  end
+
   terrainDeck = getTerrainDeck()
   terrainDeck.shuffle()
   -- print(locationDeck.hasTag("location"))
-  terrainDeck.createButton({
-    click_function = "nextRound",
-    function_owner = self,
-    label          = "1111",
-    position       = terrainDeck.getPosition() + vector(0, 0.5, 0),
-    width          = 1000,
-    height         = 1000,
-    font_size      = 100,
-    color          = "Black",
-    font_color     = "Black",
-  })
-
   setVillage()
   setNotes("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n스크립트 by 3JA2")
   return 1
 end
 
-function nextRound()
-  for i =1 , 2  do
-    local card = terrainDeck.takeObject({
-      position          = {0.00, 1.50, 10.00 + 5.00 * (i-1)},
-      rotation          = {0.00, 90.00, 0.00},
-    })
-  end
+function getTerrainCards()
+    local cards = {}
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+        if (object.tag == "Card" and object.hasTag("terrain")) or (object.tag == "Deck" and object.hasTag("terrain")) then
+            cards[#cards+1] = object
+            object.setLock(false)
+            object.setPosition({-10.00, 1.80 + 0.01*index, -26.00})
+            object.setRotation({0.00, 90.00, 180.00})
+        end
+    end
+    return cards
 end
 
 function getCards()
