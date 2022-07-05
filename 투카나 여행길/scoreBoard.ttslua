@@ -28,14 +28,29 @@ textPosHard = {
   {-1.329 , 0.112 , -0.908}
 }
 
+textPosHarder = {
+  {-0.524 , 0.102 , -0.932},
+  {0.077 , 0.110 , -0.725},
+  {0.56 , 0.102 , -0.305},
+  {0.444 , 0.102 , 0.330},
+  {0.208 , 0.102 , 0.762},
+  {-0.401 , 0.102 , 0.964},
+  {-1.136 , 0.102 , 0.954},
+  {-1.613 , 0.102 , 0.545},
+  {-1.492 , 0.102 , -0.093},
+  {-1.491 , 0.102 , -0.511}
+}
+
 function setVill(info)
     vilInfo = info
     local diff = getObjectFromGUID('a769df').getVar("hard")
     local tempPos = {}
-    if diff then
-      tempPos = textPosHard
-    else
+    if diff%3==1 then
       tempPos = textPos
+    elseif diff%3==2 then
+      tempPos = textPosHard
+    elseif diff%3==0 then
+      tempPos = textPosHarder
     end
   for i, c in ipairs(info) do
     self.createButton({
@@ -55,12 +70,15 @@ function mapUse()
     local diff = getObjectFromGUID('a769df').getVar("hard")
     -- print(diff)
     local tempPos = {}
-    if diff then
-      self.setCustomObject({image = hardLink,})
-      tempPos = textPosHard
-    else
+    if diff%3==1 then
       self.setCustomObject({image = easyLink,})
       tempPos = textPos
+    elseif diff%3==2 then
+      self.setCustomObject({image = hardLink,})
+      tempPos = textPosHard
+    elseif diff%3==0 then
+      self.setCustomObject({image = harderLink,})
+      tempPos = textPosHarder
     end
 end
 
