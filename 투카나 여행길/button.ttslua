@@ -112,7 +112,7 @@ function setVillage()
   end
 
   for i, color in ipairs(Player.getAvailableColors()) do
-    playerArea[color].setInvisibleTo(Player.getColors())
+    playerArea[color].setInvisibleTo(tempOrder)
   end
 
   for i, color in ipairs(tempOrder) do
@@ -126,6 +126,7 @@ function setVillage()
         end
       end
     -- playerArea[color].clearButtons()
+    -- print(#tempOrder)
     playerArea[color].setInvisibleTo({})
     playerArea[color].call("setVill", tempInfo)
     -- playerArea[color].call("setMap")
