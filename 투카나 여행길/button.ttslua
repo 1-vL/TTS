@@ -12,7 +12,7 @@ deck = nil
 turnOrder = {"Yellow", "Purple", "Brown", "Red", "Orange", "Green", "Teal", "Blue"}
 tempOrder = {}
 tourExp = false
-hard = false
+hard = 1
 
 function onload()
   self.createButton({ click_function = 'setup_auto',
@@ -50,20 +50,26 @@ function onload()
 end
 
 function diffToggle()
-  hard = not hard
+  hard = hard + 1
   setMap()
-  if hard then
+  if hard % 3 == 1 then
+    self.editButton({
+      index          = 3,
+      label          = '기본 난이도',
+    })
+    broadcastToAll("기본 맵을 사용합니다.")
+  elseif hard % 3 == 2 then
+    self.editButton({
+      index          = 3,
+      label          = '중급 난이도',
+    })
+    broadcastToAll("더 넓은 맵을 사용합니다.")
+  elseif hard % 3 == 0 then
     self.editButton({
       index          = 3,
       label          = '고급 난이도',
     })
-    broadcastToAll("더 넓은 맵을 사용합니다.")
-  else
-    self.editButton({
-      index          = 3,
-      label          = '쉬운 난이도',
-    })
-    broadcastToAll("기본 맵을 사용합니다.")
+    broadcastToAll("항구 맵을 사용합니다.")
   end
 end
 
@@ -130,13 +136,16 @@ end
 function setMap()
   easyLink = 'http://imgway.cz/v/Gy7.jpg'
   hardLink = 'http://imgway.cz/v/Gy8.jpg'
+  harderLink = 'https://pegasusshop.de/media/image/96/66/7e/4250231729775_Trails-of-Tucana-Die-F-hren_DE_Block_ISLA-BAHIA-min.png'
 
   for i, color in ipairs(getSeatedPlayers()) do
     -- playerArea[color].call("mapUse")
-    if hard then
-      playerArea[color].setCustomObject({image = hardLink,})
-    else
+    if hard%3 == 1 then
       playerArea[color].setCustomObject({image = easyLink,})
+    elseif hard%3 == 2 then
+      playerArea[color].setCustomObject({image = hardLink,})
+    elseif hard%3 == 0 then
+      playerArea[color].setCustomObject({image = harderLink,})
     end
     playerArea[color] = playerArea[color].reload()
     -- print(color)
