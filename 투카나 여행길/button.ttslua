@@ -243,11 +243,13 @@ function setup()
       card.setPosition({-10.00, 1.57, -26.00})
       card.setRotation(deck.getRotation())
     elseif card.getGMNotes() == "관광지 카드" then
-      card.setPosition({-10.00, 1.50, -18.00})
-      card.setRotation(deck.getRotation())
+      -- card.setPosition({-10.00, 1.50, -18.00})
+      -- card.setRotation(deck.getRotation())
+      card.destruct()
     elseif card.getGMNotes() == "마을 선착순 카드" then
-      card.setPosition({0.00, 1.50, -18.00})
-      card.setRotation(deck.getRotation())
+      -- card.setPosition({0.00, 1.50, -18.00})
+      -- card.setRotation(deck.getRotation())
+      card.destruct()
     else
       card.setPosition(deck.getPosition() + vector(0, -0.1, 0))
       card.setRotation(deck.getRotation())
@@ -292,6 +294,7 @@ function setup()
   if delTourDeck ~= nil then
     delTourDeck.destruct()
   end
+
   if tourExp then
   tourDeck = getObjectFromGUID('c27abd').takeObject({
     position          = {-10.00, 2.50, -18.00},
