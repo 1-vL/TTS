@@ -435,6 +435,36 @@ function getMyCards(obj, color)
   end
 end
 
+function setup_ui(click)
+  if click then
+    if checkPlayersSeated() then
+      startLuaCoroutine(self, "setup")
+      FirstPlayer()
+      resetScore()
+    end
+  else
+    if checkPlayersSeated() then
+      startLuaCoroutine(self, "setup")
+      FirstPlayer()
+    end
+  end
+end
+
+function score_ui(click)
+  for i, pp in ipairs(getSeatedPlayers()) do
+    myCardColors = {}
+    myCardVals = {}
+    getMyCards(self, pp)
+      if click then
+        counters[pp].call("setNumTo", counters[pp].getVar("val") - calc()[2])
+        printToAll(SixSymbolColor[pp] .. Player[pp].steam_name .. '[FFFFFF]님이 ' .. calc()[1] .. '로 얻은 ' .. calc()[2] .. '점을 취소합니다.')
+      else
+        counters[pp].call("setNumTo", counters[pp].getVar("val") + calc()[2])
+        printToAll(SixSymbolColor[pp] .. Player[pp].steam_name .. '[FFFFFF]님이 ' .. calc()[1] .. '로 ' .. calc()[2] .. '점을 얻었습니다.')
+      end
+  end
+end
+
 function setup_auto(_, _, click)
   if click then
     if checkPlayersSeated() then
