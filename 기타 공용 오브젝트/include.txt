@@ -1,2 +1,5 @@
-#include D:\Game\테이블탑 시뮬레이터 창작마당 모음\직접만든 모드\[Script]\투카나 여행길\scoreBoard
 #include D:\Game\테이블탑 시뮬레이터 창작마당 모음\직접만든 모드\[Script]\
+
+#include D:\Game\테이블탑 시뮬레이터 창작마당 모음\직접만든 모드\[Script]\기타 공용 오브젝트\Deck.ttslua
+#include D:\Game\테이블탑 시뮬레이터 창작마당 모음\직접만든 모드\[Script]\기타 공용 오브젝트\sleep.ttslua
+#include D:\Game\테이블탑 시뮬레이터 창작마당 모음\직접만든 모드\[Script]\기타 공용 오브젝트\String.ttslua
