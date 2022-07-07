@@ -1,0 +1,29 @@
+
+
+function getDeck()
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+        if object.tag == "Deck" then
+          object.setName("메인 덱")
+            return object
+        end
+    end
+end
+
+function getCards(loc_infos)
+    local cards = {}
+-- 모을 위치, 방향
+    local pos = loc_infos.pos
+    local rot = loc_infos.rot
+
+    local objects = getAllObjects()
+    for index, object in ipairs(objects) do
+        if object.tag == "Card" or object.tag == "Deck" then
+            cards[#cards+1] = object
+            object.setLock(false)
+            object.setPosition(pos + vector(0, 0.01 * index, 0))
+            object.setRotation(rot)
+        end
+    end
+    return cards
+end

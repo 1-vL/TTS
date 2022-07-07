@@ -1,6 +1,8 @@
 easyLink = 'http://imgway.cz/v/Gy7.jpg'
 hardLink = 'http://imgway.cz/v/Gy8.jpg'
 harderLink = 'https://pegasusshop.de/media/image/96/66/7e/4250231729775_Trails-of-Tucana-Die-F-hren_DE_Block_ISLA-BAHIA-min.png'
+tourScore = 0
+villScore = 0
 
 textPos = {
   {-0.602 , 0.107 , -1.080},
@@ -41,16 +43,139 @@ textPosHarder = {
   {-1.491 , 0.102 , -0.511}
 }
 
+tourBtns = {
+  {1.308 , 0.110 , -1.345},
+  {1.308 , 0.110 , -1.158},
+  {1.308 , 0.110 , -0.974},
+  {1.308 , 0.110 , -0.806},
+  {1.308 , 0.110 , -0.605},
+    {1.572 , 0.110 , -1.345},
+    {1.572 , 0.110 , -1.158},
+    {1.572 , 0.110 , -0.974},
+    {1.572 , 0.110 , -0.806},
+    {1.572 , 0.110 , -0.605}
+}
+tourBtnsScore = { 1,2,2,3,4, 2,2,3,4,5 }
+
+tourBtnsHard = {
+  {1.304 , 0.107 , -1.355},
+  {1.457 , 0.107 , -1.355},
+  {1.728 , 0.107 , -1.355},
+    {1.304 , 0.107 , -1.160},
+    {1.457 , 0.107 , -1.160},
+    {1.728 , 0.107 , -1.160},
+      {1.304 , 0.107 , -0.978},
+      {1.457 , 0.107 , -0.978},
+      {1.728 , 0.107 , -0.978},
+        {1.304 , 0.107 , -0.794},
+        {1.457 , 0.107 , -0.794},
+        {1.728 , 0.107 , -0.794},
+          {1.304 , 0.107 , -0.611},
+          {1.457 , 0.107 , -0.611},
+          {1.728 , 0.107 , -0.611},
+}
+tourBtnsScoreHard = { 1,2,2, 2,2,3, 2,3,3, 3,4,4, 4,5,5 }
+tourBtnsHarder = {
+  {1.2 , 0.107 , -1.302},
+  {1.2 , 0.107 , -1.132},
+  {1.2 , 0.107 , -0.965},
+  {1.2 , 0.107 , -0.805},
+  {1.2 , 0.107 , -0.646},
+  {1.2 , 0.107 , -0.474},
+    {1.402 , 0.107 , -1.300},
+    {1.343 , 0.107 , -1.132},
+    {1.343 , 0.107 , -0.965},
+    {1.483 , 0.107 , -0.965},
+    {1.404 , 0.107 , -0.805},
+    {1.404 , 0.107 , -0.646},
+    {1.346 , 0.107 , -0.474},
+    {1.491 , 0.107 , -0.474},
+    {1.675 , 0.107 , -0.474},
+}
+tourBtnsScoreHarder = { 2,0,1,2,3,2, 1,4,0,6,4,5,1,-2,-5 }
+tourScoreAvailable = {}
+villScoreAvailable = {}
+villBtn = {
+  {1.382 , 0.107 , -0.093},
+  {1.382 , 0.107 , 0.062},
+  {1.853 , 0.107 , -0.241},
+  {1.853 , 0.107 , -0.093},
+  {1.853 , 0.107 , 0.062}
+}
+villBtnScore = { 14,13,12,11,10 }
+
+villBtnHard = {
+  {1.393 , 0.107 , -0.088},
+  {1.393 , 0.107 , 0.075},
+  {1.858 , 0.107 , -0.244},
+  {1.858 , 0.107 , -0.088},
+  {1.858 , 0.107 , 0.075}
+
+}
+villBtnScoreHard = { 20,19,18,17,16 }
+
+villBtnHarder = {
+  {1.26 , 0.107 , -0.082},
+  {1.26 , 0.107 , 0.065},
+  {1.686 , 0.107 , -0.220},
+  {1.686 , 0.107 , -0.082},
+  {1.686 , 0.107 , 0.065}
+}
+villBtnScoreHarder = { 17,16,15,13,11 }
+
 function setVill(info)
     vilInfo = info
     local diff = getObjectFromGUID('a769df').getVar("hard")
     local tempPos = {}
+    tempTour = {}
+    tempTourScore = {}
+    tempVill = {}
+    tempVillScore = {}
+    tourScoreAvailable = {}
+    villScoreAvailable = {}
+    tourScore = 0
+    villScore = 0
+      self.createButton({
+        index          = 0,
+        click_function = "none",
+        function_owner = self,
+        label          = "",
+        position       = {2.488 , -0.098 , -1.311},
+        width          = 0,
+        height         = 0,
+        font_size      = 100,
+        font_color     = self.getGMNotes(),
+        })
+          self.createButton({
+            index          = 1,
+            click_function = "none",
+            function_owner = self,
+            label          = "",
+            position       = {2.488 , -0.098 , -0.097},
+            width          = 0,
+            height         = 0,
+            font_size      = 100,
+            font_color     = self.getGMNotes(),
+            })
+
     if diff%3==1 then
       tempPos = textPos
+      tempTour = tourBtns
+      tempTourScore = tourBtnsScore
+      tempVill = villBtn
+      tempVillScore = villBtnScore
     elseif diff%3==2 then
       tempPos = textPosHard
+      tempTour = tourBtnsHard
+      tempTourScore = tourBtnsScoreHard
+      tempVill = villBtnHard
+      tempVillScore = villBtnScoreHard
     elseif diff%3==0 then
       tempPos = textPosHarder
+      tempTour = tourBtnsHarder
+      tempTourScore = tourBtnsScoreHarder
+      tempVill = villBtnHarder
+      tempVillScore = villBtnScoreHarder
     end
   for i, c in ipairs(info) do
     self.createButton({
@@ -64,6 +189,143 @@ function setVill(info)
       font_color     = self.getGMNotes(),
       })
   end
+  btnNum = #self.getButtons()-1
+  -- print(btnNum)
+  for i, c in ipairs(tempTour) do
+  -- print(tonumber(btnNum+i))
+      self.createButton({
+        index          = tonumber(btnNum+i),
+        click_function = "addUp_" .. i,
+        function_owner = self,
+        label          = tempTourScore[i],
+        position       = tempTour[i],
+        width          = 100,
+        height         = 100,
+        font_size      = 100,
+        color          = {0, 0, 0, 0},
+        font_color     = self.getGMNotes(),
+        })
+  end
+  for i, c in ipairs(tempTour) do
+    table.insert(tourScoreAvailable, #tourScoreAvailable+1, true)
+  end
+  villBtnNum = btnNum + #tempTour
+  for i, c in ipairs(tempVill) do
+      self.createButton({
+        index          = tonumber(villBtnNum+i),
+        click_function = "addUpVill_" .. i,
+        function_owner = self,
+        label          = tempVillScore[i],
+        position       = tempVill[i],
+        width          = 100,
+        height         = 100,
+        font_size      = 100,
+        color          = {0, 0, 0, 0},
+        font_color     = self.getGMNotes(),
+        })
+  end
+
+  for i, c in ipairs(tempVill) do
+    table.insert(villScoreAvailable, #villScoreAvailable+1, true)
+  end
+end
+
+function addUp_1() local tourIndex = 1 commonAdd(tourIndex) end
+function addUp_2() local tourIndex = 2 commonAdd(tourIndex) end
+function addUp_3() local tourIndex = 3 commonAdd(tourIndex) end
+function addUp_4() local tourIndex = 4 commonAdd(tourIndex) end
+function addUp_5() local tourIndex = 5 commonAdd(tourIndex) end
+function addUp_6() local tourIndex = 6 commonAdd(tourIndex) end
+function addUp_7() local tourIndex = 7 commonAdd(tourIndex) end
+function addUp_8() local tourIndex = 8 commonAdd(tourIndex) end
+function addUp_9() local tourIndex = 9 commonAdd(tourIndex) end
+function addUp_10() local tourIndex = 10 commonAdd(tourIndex) end
+function addUp_11() local tourIndex = 11 commonAdd(tourIndex) end
+function addUp_12() local tourIndex = 12 commonAdd(tourIndex) end
+function addUp_13() local tourIndex = 13 commonAdd(tourIndex) end
+function addUp_14() local tourIndex = 14 commonAdd(tourIndex) end
+function addUp_15() local tourIndex = 15 commonAdd(tourIndex) end
+-- function addUp_16() local tourIndex = 16 commonAdd(tourIndex) end
+-- function addUp_17() local tourIndex = 17 commonAdd(tourIndex) end
+-- function addUp_18() local tourIndex = 18 commonAdd(tourIndex) end
+-- function addUp_19() local tourIndex = 19 commonAdd(tourIndex) end
+-- function addUp_20() local tourIndex = 20 commonAdd(tourIndex) end
+-- function addUp_21() local tourIndex = 21 commonAdd(tourIndex) end
+
+function addUpVill_1() local villIndex = 1 villAdd(villIndex) end
+function addUpVill_2() local villIndex = 2 villAdd(villIndex) end
+function addUpVill_3() local villIndex = 3 villAdd(villIndex) end
+function addUpVill_4() local villIndex = 4 villAdd(villIndex) end
+function addUpVill_5() local villIndex = 5 villAdd(villIndex) end
+
+function commonAdd(tourIndex)
+  if tourScoreAvailable[tourIndex] then
+    tourScore = tourScore + tempTourScore[tourIndex]
+    sumUp()
+    tourScoreAvailable[tourIndex] = not tourScoreAvailable[tourIndex]
+  else
+    tourScore = tourScore - tempTourScore[tourIndex]
+    sumUp()
+    tourScoreAvailable[tourIndex] = not tourScoreAvailable[tourIndex]
+  end
+
+  if tourScoreAvailable[tourIndex] then
+      self.editButton({
+        index          = tonumber(btnNum+tourIndex),
+        label          = " ",
+        color          = {0, 0, 0, 0},
+      })
+    else
+      self.editButton({
+        index          = tonumber(btnNum+tourIndex),
+        label          = "✗",
+        color          = {0, 0, 0, 0.7},
+      })
+  end
+end
+
+function villAdd(villIndex)
+  -- print(villScoreAvailable[villIndex])
+  if villScoreAvailable[villIndex] then
+    villScore = villScore + tempVillScore[villIndex]
+    sumUpVill()
+    villScoreAvailable[villIndex] = not villScoreAvailable[villIndex]
+  else
+    villScore = villScore - tempVillScore[villIndex]
+    sumUpVill()
+    villScoreAvailable[villIndex] = not villScoreAvailable[villIndex]
+  end
+
+  if villScoreAvailable[villIndex] then
+      self.editButton({
+        index          = tonumber(villBtnNum+villIndex),
+        label          = " ",
+        color          = {0, 0, 0, 0},
+      })
+    else
+      self.editButton({
+        index          = tonumber(villBtnNum+villIndex),
+        label          = "✗",
+        color          = {0, 0, 0, 0.7},
+      })
+  end
+end
+
+-- function addUp_1(score) tourScore = tourScore + score end
+
+function sumUp()
+  self.editButton({
+    index          = 0,
+    label          = tourScore .. "점",
+  })
+end
+
+function sumUpVill()
+  self.editButton({
+    index          = 1,
+    label          = "마을:\n" .. villScore .. "점",
+    -- label          = villScore,
+  })
 end
 
 function mapUse()

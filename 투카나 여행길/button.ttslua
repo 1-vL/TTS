@@ -1,3 +1,25 @@
+loading = true
+assets = {}
+players = {
+    total = 0,
+    waiting = 0,
+    ready = 0
+}
+readyText = false
+waitingText = true
+currentPlayers = {}
+playerList = {
+    white = false,
+    brown = false,
+    red = false,
+    orange = false,
+    yellow = false,
+    green = false,
+    teal = false,
+    blue = false,
+    purple = false,
+    pink = false,
+}
 
 card_Colors = {["노랑"] = "Yellow", ["파랑"] = "Blue", ["빨강"] = "Red", ["검정"] = "Black", ["초록"] = "Green", ["보라"] = "Purple"}
 simColors = {"노랑", "파랑", "빨강", "검정", "초록", "보라"}
@@ -40,13 +62,90 @@ function onload()
                       height = 400,
                       font_size = 100})
   self.createButton({ click_function = 'diffToggle',
-                      label = '쉬운 난이도',
+                      label = '기본 맵',
                       function_owner = self,
                       position = {-3, 0.3, 0},
                       rotation = {0, 0, 0},
                       width = 800,
                       height = 400,
                       font_size = 100})
+  self.createButton({ click_function = 'toggleUI',
+                      label = 'UI 보기/감추기',
+                      function_owner = self,
+                      position = {3, 0.3, 0},
+                      rotation = {0, 0, 0},
+                      width = 1400,
+                      height = 500,
+                      tooltip = "좌클릭:레디, 우클릭: 상단 버튼",
+                      font_size = 200})
+  self.createButton({ click_function = 'nextTerra',
+                      label = '다음 지형',
+                      function_owner = self,
+                      position = {3, 0.3, 1.5},
+                      rotation = {0, 0, 0},
+                      width = 1400,
+                      height = 500,
+                      font_size = 200})
+
+  currentPlayers = Player.getPlayers()
+
+  playerTable = Global.UI.getCustomAssets()
+  for _, playerReference in ipairs(currentPlayers) do
+      table.insert(playerTable,{
+          name = string.lower(playerReference.color).."PlayerImage",
+          url = "http://cloud-3.steamusercontent.com/ugc/1854925792342110286/7DBAC3171D07DCEA66DAA0CEF7185A0962AB46B2/"
+      })
+  end
+  Global.UI.setCustomAssets(playerTable)
+
+  xmlCode = [[<Panel
+      id="readyUI"
+      height="230"
+      width="260"
+      color="#000000F0"
+      allowDragging="true"
+      active="true"
+      rectAlignment="MiddleRight"
+      returnToOriginalPositionWhenReleased="false">
+      <VerticalLayout spacing="10">
+          <Text id="readyTitle" fontStyle="Bold" fontSize="30" text=" 준비완료" color="#828282" active="false"></Text>]]
+  for color,_ in pairs(playerList) do
+      xmlCode = xmlCode..[[
+          <HorizontalLayout id="]]..color..[[PlayerReady" active="false">
+              <Panel width="250">
+                  <Text id="]]..color..[[NameReady" alignment="MiddleCenter" fontSize="16" color="]]..color..[[" text=""></Text>
+              </Panel>
+          </HorizontalLayout>]]
+  end
+
+  xmlCode = xmlCode..[[
+          <Text id="waitingTitle" fontStyle="Bold" fontSize="30" text="대기중" color="#828282"></Text>]]
+
+  for color,_ in pairs(playerList) do
+      xmlCode = xmlCode..[[
+          <HorizontalLayout id="]]..color..[[PlayerWaiting" active="false">
+              <Panel width="250">
+                  <Text id="]]..color..[[NameWaiting" alignment="MiddleCenter" fontSize="16" color="]]..color..[[" text=""></Text>
+              </Panel>
+          </HorizontalLayout>]]
+  end
+
+  for _, color in pairs(Color.list) do
+      if not(color == 'Grey' or color == 'Black') then
+          xmlCode = xmlCode..[[
+              <Button id="]]..string.lower(color)..[[ReadyButton" visibility="]]..string.lower(color)..[[" onClick="a769df/ready]]..color..[[()"><Text>준비 되셨나요?</Text></Button>
+              <Button id="]]..string.lower(color)..[[NotReadyButton" active="false" visibility="]]..string.lower(color)..[[" onClick="a769df/notReady]]..color..[[()"><Text>레디 취소!</Text></Button>]]
+      end
+  end
+
+  xmlCode = xmlCode..[[<Button id="nextRoundButton" color="green" active="false" onClick="a769df/nextRoundButton()"><Text>다음 지형</Text></Button>
+      </VerticalLayout>
+  </Panel>]]
+
+  Wait.time(function()
+      Global.UI.setXml(Global.UI.getXml() .. xmlCode)
+  end, 1)
+  Wait.time(function() initializeList() end, 1.1,2)
 end
 
 function diffToggle()
@@ -55,19 +154,19 @@ function diffToggle()
   if hard % 3 == 1 then
     self.editButton({
       index          = 3,
-      label          = '기본 난이도',
+      label          = '기본 맵',
     })
     broadcastToAll("기본 맵을 사용합니다.")
   elseif hard % 3 == 2 then
     self.editButton({
       index          = 3,
-      label          = '중급 난이도',
+      label          = '넓은 맵',
     })
     broadcastToAll("더 넓은 맵을 사용합니다.")
   elseif hard % 3 == 0 then
     self.editButton({
       index          = 3,
-      label          = '고급 난이도',
+      label          = '항구 맵',
     })
     broadcastToAll("항구 맵을 사용합니다.")
   end
@@ -125,7 +224,7 @@ function setVillage()
           table.insert(tempInfo, j, villInfo[10-newIndex])
         end
       end
-    -- playerArea[color].clearButtons()
+    playerArea[color].clearButtons()
     -- print(#tempOrder)
     playerArea[color].setInvisibleTo({})
     playerArea[color].call("setVill", tempInfo)
@@ -220,6 +319,10 @@ function FirstPlayer()
     startLuaCoroutine(self, "nr")
   end
 
+  function nextTerra()
+    Global.call("nextTerrain")
+  end
+
   function nr()
     sleep(0.5)
     cards = getTerrainCards()
@@ -286,7 +389,7 @@ function setup()
       goalDeck.takeObject({
         position          = goalDeck.getPosition() + vector(0, 0 - i * 0.1, 6.90 * ((i-1)%5+1)),
         rotation          = {0.00, 90.00, 0.00},
-      })
+      }).setScale({2.29, 1.00, 2.29})
     end
   goalDeck.destruct()
 
@@ -311,7 +414,7 @@ function setup()
     tourDeck.takeObject({
       position          = tourDeck.getPosition() + vector(0, 0, 6.90 * i),
       rotation          = {0.00, 90.00, 0.00},
-    })
+    }).setScale({2.29, 1.00, 2.29})
   end
     tourDeck.destruct()
   end
@@ -420,4 +523,175 @@ while delim_from do
 end
 table.insert( result, string.sub( self, from ) )
 return result
+end
+
+function initializeList()
+    players.total = #currentPlayers
+    players.waiting = #currentPlayers
+
+    for _, playerReference in ipairs(currentPlayers) do
+        color = string.lower(playerReference.color)
+        playerList[color] = true
+        Global.UI.setAttribute(color..'PlayerWaiting', "active", "true")
+        Global.UI.setAttribute(color..'NameWaiting', 'text', playerReference.steam_name)
+        Global.UI.setAttribute(color..'NameReady', 'text', playerReference.steam_name)
+    end
+
+    checkTitle()
+end
+
+function onPlayerChangeColor(newCol)
+    if not(newCol == 'Grey' or newCol == 'Black') then
+        newColor = string.lower(newCol)
+        newPlayerList = Player.getPlayers()
+
+        for oldColor,v in pairs(playerList) do
+            found = false
+            if v then
+                for _, playerReference in ipairs(newPlayerList) do
+                    if oldColor == string.lower(playerReference.color) then
+                        found = true
+                    end
+                end
+
+                if not(found) then
+                    oldPlayerTable = Global.UI.getCustomAssets()
+                    newPlayerTable = {}
+                    for _, imageTable in ipairs(oldPlayerTable) do
+
+                        if imageTable.name == oldColor.."PlayerImage" then
+                            table.insert(newPlayerTable,{
+                                name = newColor.."PlayerImage",
+                                url = "http://cloud-3.steamusercontent.com/ugc/1854925792342110286/7DBAC3171D07DCEA66DAA0CEF7185A0962AB46B2/"
+                            })
+                        else
+                            table.insert(newPlayerTable,imageTable)
+                        end
+                    end
+                    Global.UI.setCustomAssets(newPlayerTable)
+
+                    Wait.time(function()
+                        Global.UI.setAttribute(newColor..'PlayerWaiting', "active", Global.UI.getAttribute(oldColor..'PlayerWaiting', 'active'))
+                        Global.UI.setAttribute(newColor..'PlayerReady', "active", Global.UI.getAttribute(oldColor..'PlayerReady', 'active'))
+                        Global.UI.setAttribute(newColor..'NameWaiting', 'text', Global.UI.getAttribute(oldColor..'NameWaiting', 'text'))
+                        Global.UI.setAttribute(newColor..'NameReady', 'text', Global.UI.getAttribute(oldColor..'NameReady', 'text'))
+                        Global.UI.setAttribute(oldColor..'PlayerWaiting', "active", "false")
+                        Global.UI.setAttribute(oldColor..'PlayerReady', "active", "false")
+                        playerList[oldColor] = false
+                        playerList[newColor] = true
+                    end, 0.1)
+                end
+            end
+        end
+    end
+end
+
+function readyWhite()  readyButton("white")    end
+function readyBrown()  readyButton("brown")    end
+function readyRed()    readyButton("red")      end
+function readyOrange() readyButton("orange")   end
+function readyYellow() readyButton("yellow")   end
+function readyGreen()  readyButton("green")    end
+function readyTeal()   readyButton("teal")     end
+function readyBlue()   readyButton("blue")     end
+function readyPurple() readyButton("purple")   end
+function readyPink()   readyButton("pink")     end
+
+function readyButton(playerColor)
+    players.ready = players.ready + 1
+    players.waiting = players.waiting - 1
+    checkTitle()
+
+    Global.UI.setAttribute(playerColor..'PlayerWaiting', "active", "false")
+    Global.UI.setAttribute(playerColor..'PlayerReady', "active", "true")
+    Global.UI.setAttribute(playerColor..'ReadyButton', "active", "false")
+    Global.UI.setAttribute(playerColor..'NotReadyButton', "active", "true")
+end
+
+function notReadyWhite()  notReadyButton("white")    end
+function notReadyBrown()  notReadyButton("brown")    end
+function notReadyRed()    notReadyButton("red")      end
+function notReadyOrange() notReadyButton("orange")   end
+function notReadyYellow() notReadyButton("yellow")   end
+function notReadyGreen()  notReadyButton("green")    end
+function notReadyTeal()   notReadyButton("teal")     end
+function notReadyBlue()   notReadyButton("blue")     end
+function notReadyPurple() notReadyButton("purple")   end
+function notReadyPink()   notReadyButton("pink")     end
+
+function notReadyButton(playerColor)
+    players.ready = players.ready - 1
+    players.waiting = players.waiting + 1
+    checkTitle()
+
+    Global.UI.setAttribute(playerColor..'PlayerWaiting', "active", "true")
+    Global.UI.setAttribute(playerColor..'PlayerReady', "active", "false")
+    Global.UI.setAttribute(playerColor..'ReadyButton', "active", "true")
+    Global.UI.setAttribute(playerColor..'NotReadyButton', "active", "false")
+end
+
+function nextRoundButton()
+    for color, playing in pairs(playerList) do
+        if playing then
+            Global.UI.setAttribute(color..'PlayerReady', "active", "false")
+            Global.UI.setAttribute(color..'PlayerWaiting', "active", "true")
+            Global.UI.setAttribute(color..'ReadyButton', "active", "true")
+            Global.UI.setAttribute(color..'NotReadyButton', "active", "false")
+        end
+    end
+
+    players.waiting = players.ready
+    players.ready = 0
+    checkTitle()
+    Global.call("nextTerrain")
+end
+
+function checkTitle()
+    newListHeight = (players.total * 60) + 110
+
+    if players.ready == 0 then
+        Global.UI.setAttribute('readyTitle', "active", "false")
+    else
+        Global.UI.setAttribute('readyTitle', "active", "true")
+        newListHeight = newListHeight + 80
+    end
+
+    if players.waiting == 0 then
+        Global.UI.setAttribute('waitingTitle', "active", "false")
+        Global.UI.setAttribute('nextRoundButton', "active", "true")
+        -- Global.call("nextTerrain")
+        newListHeight = newListHeight - 30
+    else
+        Global.UI.setAttribute('waitingTitle', "active", "true")
+        Global.UI.setAttribute('nextRoundButton', "active", "false")
+    end
+
+    Global.UI.setAttribute('readyUI', "height", tostring(newListHeight))
+end
+
+function onDestroy()
+    Global.UI.setAttribute('readyUI', "active", "false")
+end
+
+function toggleUI(_,_, click)
+  local visibility = Global.UI.getAttribute('readyUI', "active")
+  -- print(visibility)
+  local topVisibility = Global.UI.getAttribute('nextTerrain2', "active")
+  if click == false then
+    if visibility == "true" then
+      Global.UI.setAttribute('readyUI', "active", "false")
+      Global.UI.setAttribute('nextRound', "active", "false")
+    elseif visibility == "false" then
+      Global.UI.setAttribute('readyUI', "active", "true")
+      Global.UI.setAttribute('nextRound', "active", "true")
+    end
+  else
+    if topVisibility == "true" then
+      Global.UI.setAttribute('nextTerrain2', "active", "false")
+      Global.UI.setAttribute('nextRound2', "active", "false")
+    elseif topVisibility == "false" then
+      Global.UI.setAttribute('nextTerrain2', "active", "true")
+      Global.UI.setAttribute('nextRound2', "active", "true")
+    end
+  end
 end

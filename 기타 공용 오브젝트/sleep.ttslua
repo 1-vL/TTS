@@ -1,0 +1,7 @@
+
+function sleep(sec)
+    local fin = os.clock() + sec
+    while fin > os.clock() do
+        coroutine.yield(0)
+    end
+end
